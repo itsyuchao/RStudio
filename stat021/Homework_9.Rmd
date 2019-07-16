@@ -1,0 +1,326 @@
+---
+title: "STAT021 Homework 9"
+author: "Yuchao Wang"
+date: "November 26, 2018"
+output: pdf_document
+fontsize: 12pt
+---
+
+
+## Goals
+
+* Use polynomial regression model to analyze data.
+* Understand and evaluate multicollinearity of an MLR model.
+* Compare MLR models using
+    + Nested $F$ test
+    + Adjusted $R^2$
+    + Mallow's $C_p$
+    + AIC
+* Select MLR model by
+    + Forward selection
+    + Backward elimination
+    + Stepwise procedure
+
+
+## Question 0 (not really a question) (5%)
+
+* **Data Visualization with ggplot2 (Part 2)** by Wednesday 12/5 11:55 PM.
+
+## Question 1
+
+The file `Pollster08.RData` at `/home/stat021f18/datasets` contains data from 102 polls that were taken during the 2008 U.S. presidential campaign. These data include all presidential polls reported on the Internet site <www.pollster.com> that were taken between August 29, when John McCain announced that Sarah Palin would be his running mate as the Republican nominee for vice president, and the end of September. The variable *MidDate* gives the middle date of the period when the poll was "in the field" (i.e., when the poll was being conducted). The variable *Days* measures the number of days after August 28 (the end of the Democratic convention) that the poll was conducted. The variable *Margin* shows $Obama\% - McCain\%$ and is a measure of Barack Obama's lead in percentage. *Margin* is negative for those polls that showed McCain to be ahead.
+
+The variable *Charlie* equals 0 if the poll was conducted before the telecast of the first ABC interview of Palin by Charlie Gibson (on September 11) and 1 if the poll was conducted after that telecast. The variable *Meltdown* equals 0 if the poll was conducted before the bankruptcy of Lehman Brothers triggered a meltdown on Wall Street (on September 15) and 1 if the poll was conducted after September 15.
+
+1. Provide a scatterplot of *Margin* versus *Days*. Comment on the relationship.
+
+**Answer**:    
+There seems to be a non-linear relationship between *Margin* and *Days*. Before around Day 10, *Margin* decreases as *Day* increases. After around Day 10, *Margin* increases as *Day* increases. 
+
+```{r, fig.width=4, fig.height=3}
+load("/home/stat021f18/datasets/Pollster08.RData")
+library("ggplot2")
+ggplot(data=Pollster08,aes(x=Days, y=Margin))+
+  geom_point(alpha=0.6, position = "jitter")
+
+```
+
+2. Find the best polynomial regression model to explain *Margin* using *Days* (Add polynomial terms one by one to the model; you may try 2nd, 3rd and even 4th order terms and choose the best from these models). Add the polynomial regression line to the scatterplot using the codes below (uncomment and edit the codes). Interpret the $t$ test for slope of the highest order term, the $F$ test for the model and $R^2$ value. What does the model tell you about the relationship between *Margin* on *Days*? Do you think the model fits the data well?
+
+**Answer**:    
+Adding the polynomial terms one by one, we notice that models including up to 1st, 2nd, and 3rd order terms of *Days* all show significant $p$-values for the $t$ test of the slope. However, including the 4th order term of *Days* shows insignificant slope and thus is not necessary in the model. Also, the $F$ test shows that all four models are overall significant, but the adjusted $R^2$ values show that Model 3 containing up to cubic term is the best. Overall, the best model is the cubic model. The $t$ test for slope of the highest order term i.e. the cubic term in this case, shows whether the current model is significantly different from the previous model without the highest order term (therefore the cubic model is better than the quadratic model). And the $R^2$ value shows that 40% of the variability in *Margin* can be explained by *Days* and thus the model is relatively strong. The model fits the data relatively well since it captures the non-linear relationship based on the scatterplot and shows different slopes of descent and ascent before and after around Day 10. 
+
+```{r, fig.width=4, fig.height=3}
+#first order
+summary(days1 <- lm(Margin ~ Days, data=Pollster08))
+
+#second order
+summary(days2 <- lm(Margin ~ Days + I(Days^2), data=Pollster08))
+
+#third order
+summary(days3 <- lm(Margin ~ Days + I(Days^2) + I(Days^3), data=Pollster08))
+
+#fourth order
+summary(days4 <- lm(Margin ~ Days + I(Days^2) + I(Days^3) 
+                    + I(Days^4), data=Pollster08))
+
+# Polynomial regression line (you may set your preferred colors for
+# the points and line)
+newdata <- data.frame(Pollster08,
+                      Predicted = days4$fitted.values)
+ggplot(newdata, aes(x = Days, y = Margin))+
+  geom_point()+
+  geom_line(aes(y = Predicted))+
+  ggtitle("Margin ~ Days")
+```
+
+3. Find the best multiple **linear** regression model to explain *Margin* using *Days* and *Charlie* (try models with and without the interaction term and choose the better one). Add linear regression lines of *Margin* on *Days* for the $Charlie=0$ and $Charlie=1$ group separately (Lecture 17 Slide 5). Interpret the $t$ test for slope of the interaction term (if any; if none, interpret the main effects terms), the $F$ test for the model and $R^2$ value. What does the model tell you about the relationship between *Margin* on *Days*? Do you think the model fits the data well?
+
+**Answer**:    
+The multiple linear regression model using *Days* and *Charlie* with the interaction term is better since it has a much higher adjusted $R^2$ than the model without the interaction term. Also, the $t$ test for all the slopes show significant $p$-values for the model with interaction term. The $t$ test for slope of the interaction term shows that the model is significantly different when the slope of *Days* is allowed to vary according to value of *Charlie*. The $F$ test shows that the MLR model with interaction term is overall significant and $R^2$ shows that 41.7% of the variability in *Margin* can be explained by *Days* and *Charlie* with their interaction term.  The model shows that the relationship between *Margin* on *Days* significantly vary according to the data of *Charlie*, as can be seen by the negative and positive slopes of the regression line and the $t$ test on the interaction term. The model fits the data well since it captures both the downward and upward trend and has a relatively high $R^2$ value. 
+
+```{r, fig.width=4, fig.height=3}
+#without interaction term
+summary(dc1 <- lm(Margin ~ Days + Charlie, data=Pollster08))
+
+#with interaction term
+summary(dc2 <- lm(Margin ~ Days * Charlie, data=Pollster08))
+
+ggplot(Pollster08, aes(x=Days, y=Margin, color=Charlie))+
+ geom_point(size=2.5, alpha=0.6)+
+ geom_smooth(method="lm", se=F, size=1.5)+
+ ggtitle("Margin ~ Days separately")
+```
+
+
+
+4. Find the best multiple **linear** regression model to explain *Margin* using *Days* and *Meltdown* (try models with and without the interaction term and choose the better one). Add linear regression lines of *Margin* on *Days* for the $Meltdown=0$ and $Meltdown=1$ group separately (Lecture 17 Slide 5). Interpret the $t$ test for slope of the interaction term (if any; if none, interpret the main effects terms), the $F$ test for the model and $R^2$ value. What does the model tell you about the relationship between *Margin* on *Days*? Do you think the model fits the data well?
+
+**Answer**:    
+The multiple linear regression model using *Days* and *Meltdown* with the interaction term is better since it has a much higher adjusted $R^2$ than the model without the interaction term. Also, the $t$ test for all the slopes show significant $p$-values for the model with interaction term. The $t$ test for slope of the interaction term shows that the model is significantly different when the slope of *Days* is allowed to vary according to value of *Meltdown*. The $F$ test shows that the MLR model with interaction term is overall significant and $R^2$ shows that 32.4% of the variability in *Margin* can be explained by *Days* and *Meltdown* with their interaction term.  The model shows that the relationship between *Margin* on *Days* significantly vary according to the data of *Meltdown*, as can be seen by the negative and positive slopes of the regression line and the $t$ test on the interaction term. The model fits the data not as well as the previous one in part 3 since it has a lower $R^2$ value and hence less explanatory power. 
+
+```{r, fig.width=4, fig.height=3}
+#without interaction term
+summary(dm1 <- lm(Margin ~ Days + Meltdown, data=Pollster08))
+
+#with interaction term
+summary(dm2 <- lm(Margin ~ Days * Meltdown, data=Pollster08))
+
+ggplot(Pollster08, aes(x=Days, y=Margin, color=Meltdown))+
+ geom_point(size=2.5, alpha=0.6)+
+ geom_smooth(method="lm", se=F, size=1.5)+
+ ggtitle("Margin ~ Days separately")
+```
+
+5. Consider the three models you found in part 2, 3 and 4. With the help of the three scatterplots with regression lines in part 2, 3 and 4, discuss how each model explains the response variable *Margin* using the predictors? Compare the three models based on nested $F$ test, adjusted $R^2$, Mallow's $C_p$ and AIC. Suggest the best model. What is the best theory to explain the relationship between *Margin* and *Days*?
+
+**Answer**:    
+The cubic model in part 2 explains the data by using *Days* only and fitting an asymmetric curve on the non-linear trend of *Margin* over the *Days*. The MLR models with interaction terms in part 3 and 4 explains the difference in slope by introducing one additional categorical variable i.e. whether the *Charlie* interview incident or the financial *Meltdown* situation explains the changing slopes. The nested $F$ test shows that, though they use the same number of predictors, model in part 2 i.e. MLR of *Margin* ~ *Days* \* *Charlie* shows the least residual sum of squares and hence is the best. This model also has the highest adjusted $R^2$ value. This model has the least Mallow's $C_p$ and AIC, and hence all the evidence converge in identifying *Margin* ~ *Days* \* *Charlie* as the best model. This means that the *Charlie* TV interview probably has the greatest effect, or explanatory power, of the changing slope of *Margin* over time. 
+ 
+```{r, fig.width=4, fig.height=3}
+#nested F test
+anova(days3, dc2, dm2, days3)
+
+#mallow's cp
+anova(days3, dc2, dm2, test="Cp")
+
+#AIC
+AIC(days3, dc2, dm2)
+```
+
+
+## Question 2
+
+In the National Football League (NFL), performance bonuses now account for roughly 25% of player compensation [^1]. Does a player's base salary, signing bonus or performance bonus related to better individual or team success on the field? Focusing on linebackers, let's look at the relationship between a player's end-of-year production rating (*Rating*, response variable) and his base salary (*Base.Salary*), signing bonus (*Signing.Bonus*) and performance bonus (*Other.Bonus*) in that same year. The data is stored in `NFLPay.txt` at `/home/stat021f18/datasets/`.
+
+[^1]: M. Mondello and J. Maxcy, "The impact of salary dispersion and performance bonuses in NFL organizations" *Management Decision*, 47 (2009), pp. 110-123.  
+These data were collected from www.cbssports.com/nfl/playerrankings/regularseason/ and content.usatoday.com/sportsdata/football/nfl/salaries/team.
+
+
+1. Exploratory data analysis. Provide summary statistics of each variable. Use the `ggpairs()` function in the `GGally` package to visualize the distributions of individual variables and relationships between the response variable and each predictor. Comment.
+
+**Answer**:    
+The distribution of response variable *Rating* is significantly left skewed and slightly bimodal, and there is a strong correlation between *Base.Salary* and *Signing.Bonus* (corr=0.574). The correlation between other predictors are relatively lower (less than 0.2). There is no obvious strong linear relationship between *Rating* and the other predictors, and most data points are clustered at a relatively low *Base.Salary*, *Signing.Bonus*, and *Other.Bonus*. We need to see the residual fit to see if we need to transform certain variables to fulfill the assumptions.
+
+```{r, fig.width=6, fig.height=5}
+NFL <- read.table("/home/stat021f18/datasets/NFLPay.txt",
+                    sep="\t", header=T)
+library("psych")
+describe(NFL)[,2:4]
+library("GGally")
+ggpairs(data=NFL[,c("Rating", "Base.Salary", 
+                    "Signing.Bonus","Other.Bonus")])
+```
+
+2. Check multicollinearity using scatterplot matrix, correlation matrix and VIF values. Do you find any evidence of multicollinearity?
+
+**Answer**:   
+There is a strong correlation between *Base.Salary* and *Signing.Bonus* (corr=0.574). The correlation between other predictors are much lower (less than 0.2). The same trend can be seen in the scatterplot matrix, since the scatterplot between *Base.Salary* and *Signing.Bonus* shows a clear positive trend while the other scatterplots between predictors show a not as obvious negative slope. The VIF, however, shows that there is no problem with multicollinearity when we consider a MLR model without interaction terms with the three predictors, since their VIF are all much lower than 5. Therefore, though there is some correlation between predictors, there may not be evidence of/problems with multicollinearity. 
+
+```{r}
+library(car)
+vif(lm(Rating ~ Base.Salary + Signing.Bonus + Other.Bonus, data=NFL))
+```
+
+
+3. Consider models to explain *Rating* using only *Base.Salary* and *Other.Bonus*. Fit the following four models and choose the best among them based on nested $F$ test, adjusted $R^2$, Mallow's $C_p$ and AIC. Draw a conclusion on the relationship.
+    a. *Rating* ~ *Base.Salary* + *Other.Bonus*
+    b. a + interaction term
+    c. a + both quadratic terms
+    d. Complete second-order model
+
+**Answer**:    
+Model d has the highest adjusted $R^2$, and the nested $F$ test shows that model d is significantly different from model a and c, and model c is significantly different from model b. And since model D has the most number of predictors, it is the best among the four. Mallow's $C_p$ and AIC both give the same conclusion that model d is the best, since it has the lowest values. 31.7% of the variability in *Rating* can be explained by the full second order model considering both *Base.Salary* and *Other.Bonus*. 
+
+```{r}
+#Model A
+summary(modela <- lm(Rating ~ Base.Salary + Other.Bonus, data=NFL))
+#Model B
+summary(modelb <- lm(Rating ~ Base.Salary * Other.Bonus, data=NFL))
+#Model C
+summary(modelc <- lm(Rating ~ Base.Salary + I(Base.Salary^2) 
+                     + Other.Bonus + I(Other.Bonus^2), data=NFL))
+#Model D
+summary(modeld <- lm(Rating ~ Base.Salary * Other.Bonus 
+                     + I(Base.Salary^2) + I(Other.Bonus^2), data=NFL))
+#Nested F test
+anova(modela, modelb, modelc, modeld, modela)
+#Cp
+anova(modela, modelb, modelc, modeld, test="Cp")
+#AIC
+AIC(modela, modelb, modelc, modeld)
+
+```
+
+
+4. Now use all the three predictors *Base.Salary*, *Signing.Bonus* and *Other.Bonus* to explain *Rating*. Suggest the best model based on nested $F$ test, adjusted $R^2$, Mallow's $C_p$ and AIC (consider at most two-way interaction terms and no polynomial terms; note: you can have multiple two-way interaction terms in a model; hint: there will be a total of 8 models).
+
+**Answer**:    
+Adjusted $R^2$ shows that Model 6 is the best, followed by Model 5. Nested $F$ test shows that Model 8 is the best with the lowest residual sum of squares, followed by Model 6. Mallow's $C_p$ and AIC both indicate that Model 6 is the best with the lowest values. Therefore overall, we can conclude that model 6 is the best, which is MLR of *Rating* ~ *Base.Salary* + *Signing.Bonus* + *Other.Bonus* + interaction term between Other.Bonus and Base.Salary + interaction term between Base.Salary and Signing.Bonus.  
+
+```{r}
+#1
+summary(model1 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     + Other.Bonus, data=NFL))
+#2
+summary(model2 <- lm(Rating ~ Base.Salary * Signing.Bonus 
+                     + Other.Bonus, data=NFL))
+#3
+summary(model3 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     * Other.Bonus, data=NFL))
+#4
+summary(model4 <- lm(Rating ~ Base.Salary * Other.Bonus 
+                     + Signing.Bonus, data=NFL))
+#5
+summary(model5 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     + Other.Bonus + Base.Salary:Signing.Bonus 
+                     + Signing.Bonus:Other.Bonus, data=NFL))
+#6
+summary(model6 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     + Other.Bonus + Other.Bonus:Base.Salary 
+                     + Base.Salary:Signing.Bonus, data=NFL))
+#7
+summary(model7 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     + Other.Bonus + Other.Bonus:Base.Salary 
+                     + Other.Bonus:Signing.Bonus, data=NFL))
+#8
+summary(model8 <- lm(Rating ~ Base.Salary + Signing.Bonus 
+                     + Other.Bonus + Other.Bonus:Base.Salary 
+                     + Other.Bonus:Signing.Bonus 
+                     + Base.Salary:Signing.Bonus, data=NFL))
+
+#Nested F test
+anova(model1, model2, model3, model4, model5, model6, 
+    model7, model8, model1)
+
+#Cp
+anova(model1, model2, model3, model4, model5, model6, 
+    model7, model8, test="Cp")
+#AIC
+AIC(model1, model2, model3, model4, model5, model6, 
+    model7, model8)
+
+```
+
+## Question 3 Stepwise Model Selection
+
+1. Use `step()` funtion to conduct **forward selection**, **backward elimination** and **stepwise precedure** on the data in **Question 1** to find a potential best model. Note:
+    + Response variable: *Margin*; predictors: *Days*, *Charlie*, *Meltdown*.
+    + Properly define your zero model and full model. In your full model, consider **at most** 3rd order polynomial terms and **at most** three-way interaction term.
+    + There is NO polynomial terms for categorical variables.
+    + Compare the three models found by the three different procedures and suggest the best one unless they all find the the same model.
+
+**Answer**:    
+Forward selection generates model of Margin ~ I(Days^3) + Days + I(Days^2) + Charlie;   
+Backward elimination generates model of Margin ~ Days + Charlie + Days:Charlie;   
+Stepwise procedure generates model of Margin ~ Days + I(Days^2) + Charlie, which are all different from one another.    
+Adjusted $R^2$ values of three models are very close to each other, with the model by backward elimination having the highest value. Nested $F$ test shows that the model by forward selection has the lowest residual sum of squares and the other two models with one more predictor are not significantly different from it. Hence the model by forward selection is the best. Both Mallow's $C_p$ and AIC support that the model by backward elimination is the best, tho the AIC values for the three models are extremely close as well. Overall, we can conclude that, since more evidence supports model by backward selection, Margin ~ Days + Charlie + Days:Charlie is a potential best model. 
+
+```{r}
+zeroModel <- lm(Margin ~ 1, data=Pollster08)
+fullModel <- lm(Margin ~ (Days + Charlie + Meltdown)^3 
+                + I(Days^2) + I(Days^3), data=Pollster08)
+
+# Forward selection
+forward <- step(zeroModel, scope=list(upper = fullModel),
+                direction="forward", trace = 0)
+summary(forward) # summarizes the final model
+# Backward elimination
+backward <- step(fullModel, scope=list(lower = zeroModel),
+                 direction="backward", trace = 0)
+summary(backward) # summarizes the final model
+# Stepwise procedure
+stepwise <- step(zeroModel, scope=list(upper = fullModel),
+                 direction="both", trace = 0)
+summary(stepwise) # summarizes the final model
+
+# Compare the models selected by the three methods
+# Adjusted R squared
+summary(forward)$adj.r.squared
+summary(backward)$adj.r.squared
+summary(stepwise)$adj.r.squared
+# Nested F test
+anova(forward, backward, stepwise)
+# Mallow's Cp
+anova(forward, backward, stepwise, test="Cp")
+# AIC
+AIC(forward, backward, stepwise)
+```
+
+2. Use `step()` funtion to conduct **forward selection**, **backward elimination** and **stepwise precedure** on the data in **Question 2** to find a potential best model. Note:
+    + Response variable: *Rating*; predictors: *Base.Salary*, *Signing.Bonus*,  *Other.Bonus*.
+    + Properly define your zero model and full model. In your full model, consider **at most** 3rd order polynomial terms and **at most** three-way interaction term.
+    + Compare the three models found by the three different procedures and suggest the best one unless they all find the the same model.
+
+**Answer**:    
+All three procedures generate the same model of Rating ~ Base.Salary + Signing.Bonus + Other.Bonus + I(Other.Bonus^2) + Base.Salary:Signing.Bonus + Base.Salary:Other.Bonus, and hence it is the potential best model. 
+
+```{r}
+zeroModel <- lm(Rating ~ 1, data=NFL) 
+fullModel <- lm(Rating ~ (Base.Salary + Signing.Bonus 
+                     + Other.Bonus)^3 +  
+                + I(Base.Salary^2) + I(Base.Salary^3) 
+                + I(Signing.Bonus^2) + I(Signing.Bonus^3) 
+                + I(Other.Bonus^2) + I(Other.Bonus^3), data=NFL)
+# Forward selection
+forward <- step(zeroModel, scope=list(upper = fullModel),
+                direction="forward", trace = 0)
+summary(forward) # summarizes the final model
+# Backward elimination
+backward <- step(fullModel, scope=list(lower = zeroModel),
+                 direction="backward", trace = 0)
+summary(backward) # summarizes the final model
+# Stepwise procedure
+stepwise <- step(zeroModel, scope=list(upper = fullModel),
+                 direction="both", trace = 0)
+summary(stepwise) # summarizes the final model
+```
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_9.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

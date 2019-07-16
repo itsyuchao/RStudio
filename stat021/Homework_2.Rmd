@@ -1,0 +1,331 @@
+---
+title: "STAT021 Homework 2"
+author: "Yuchao Wang"
+date: "September 19, 2018"
+fontsize: 12pt
+output: pdf_document
+---
+
+
+## Goals
+
+* Get familiar with the four-step process using two-sample $t$ test.
+* Understand the concept of variance.
+
+## Grading
+
+* Codes exceed the code box in the .pdf file: 2 points off for every occurrence.
+* Math (inline or display) mode is required whenever you want to include math notations and equations in your answer.
+
+## Question 0 (not really a question) (10%)
+
+* **Introduction to R** *Chapter 4*, *5* and *6*. After *Chapter 6* is finished, you complete the whole **Introduction to R** course. DataCamp will generate a **Statement of Accomplishment** for you to download or share. DataCamp also integrates with Linkedin to allow others to see the certificates you have. For details, see <https://support.datacamp.com/hc/en-us/articles/360005885114>.
+* Starting from Homework 3, I will not assign specific chapters in each problem set but the whole course. Here is a list of required DataCamp courses that you need to finish by the end of the semester.
+    + **Intermediate R**, due on Wednesday 10/10 11:55 PM.
+    + **Data Visualization with ggplot2 (Part 1)**, due on Wednesday 11/7 11:55 PM.
+    + **Data Visualization with ggplot2 (Part 2)**, due on Wednesday 12/5 11:55 PM.
+    
+## Question 1~6
+
+The study (Volpp et al., 2008) on financial incentives for weight loss in Lecture 3 Slide 15~16 did a follow-up weight check after seven months to see whether weight losses persisted after the original four months of treatment (financial incentives were applied to the incentive group in the first four months only). The dataset `WeightLossIncentive7.txt` has been uploaded to RStudio server in the folder `/home/stat021f18/datasets`. Note that a few participants dropped out and were not re-weighed at the seven-month point. As with the class example, the data are the change in weight (in pounds) calculated by $Before - After$ in pounds. In this homework, we will follow the four-step process in Lecture 3 Slide 19~25 to analyze this new dataset.
+
+## Question 1
+
+**Four-step process: CHOOSE**
+
+1. Read the data into R and assign name `Weight` to it. What are the variables in this dataset? How many observations are there?  (Hint: consult the code we used in Homework 1 to input data.)
+2. Do exploratory data analysis on each variable. **Comment**. (Hint: Lecture 2 Slide 3~8; use bar plot to visualize a categorical variable. (you may also try pie chart))
+3. Do exploratory data analysis on the relationship between the two variables: Calculate the sample size, mean and SD of *WeightLoss* for the *Control* group and *Incentive* group separately; Fill in the table below; Make histograms of *WeightLoss* for the two groups; Make a boxplot to compare *WeightLoss* by *Group*. **Comment**. (Hint: Lecture 3 Slide 19~20, codes on Slide 27)
+4. What model would you use to evaluate whether there is difference in weight loss between the two groups?
+
+
+**Answer**:  
+
+1. There is a categorical variable "Group" and a quantitative variable "WeightLoss" in this dataset. There are 33 observations in total. 
+
+```{r, fig.width=5, fig.height=3}
+Weight <- read.table("/home/stat021f18/datasets/WeightLossIncentive7.txt",
+                    sep="\t", header=T)
+str(Weight)
+head(Weight)
+```
+
+2. 
+
+```{r, fig.width=5, fig.height=3}
+library(ggplot2)
+ggplot(data=Weight, aes(x=WeightLoss,y=..density..))+
+  geom_histogram(binwidth = 5)+ 
+  ggtitle("Histogram of Weight Loss")+
+  theme_minimal()
+hist(Weight$WeightLoss, breaks=10, col="lightblue", freq=F,
+ xlab="Weight Loss(lbs)", main="Histogram of Weight Loss")
+tab.group <- table(Weight$Group) 
+barplot(tab.group, xlab="Group", ylab="Counts", 
+        main="Bar Plot of Group", col=c("lightblue","lightpink"))
+prop.table(tab.group)
+pie(tab.group, main="Pie Chart of Group", 
+    labels = c("Control:54.5%","Incentive:45.5%"), 
+    col=c("lightblue", "lightpink"))
+```
+
+3. 
+
+```{r, fig.width=5, fig.height=3}
+wl.control <- Weight$WeightLoss[Weight$Group=="Control"]
+wl.incentive <- Weight$WeightLoss[Weight$Group=="Incentive"]
+mysummary <- function(x){c(number=length(x),mean=mean(x),sd=sd(x))}
+mysummary(wl.control)
+mysummary(wl.incentive)
+hist(wl.control, breaks=15, col="lightblue", freq=F,
+ xlab="Weight Loss(lbs)", main="Histogram of Weight Loss for Control")
+hist(wl.incentive, breaks=15, col="lightpink", freq=F,
+ xlab="Weight Loss(lbs)", main="Histogram of Weight Loss for Incentive")
+boxplot(Weight$WeightLoss~Weight$Group, col=c("lightblue","lightpink"),
+ xlab="Group", main="Box Plot of Weight Loss")
+```
+
+(Always leave a blank line before and after a table.)
+
+------------------------------------------------------
+ Group       Size       Sample Mean        Sample SD
+----------- ---------- ------------------ ------------
+ Control     $n_1=18$      $\bar{y}_1=4.6$              $s_1=9.8$
+ 
+ Incentive   $n_2=15$      $\bar{y}_2=7.8$              $s_2=12.1$
+------------------------------------------------------
+
+4. I would use normal distributions to model the weight loss in two groups seperately and use t-test to evaluate whether there is strong evidence suggesting that the mean of those two normal distributions are different (and therefore there is a difference in weight loss between the two groups).  
+
+
+## Question 2
+
+**Four-step process: FIT**
+
+What are the parameters you assumed in your model? What are the estimates to these parameters? (Hint: Lecture 3)
+
+**Answer**: Data($Y$) = Model($f(X)$) + Error ($\epsilon$)     
+For control group: $Y=\mu_1+\epsilon_1$, where $\epsilon_1 \sim N(0,\sigma_1) \Rightarrow Y \sim N(\mu_1, \sigma_1)$       
+For incentive group: $Y=\mu_2+\epsilon_2$, where $\epsilon_2 \sim N(0,\sigma_2) \Rightarrow Y \sim N(\mu_2, \sigma_2)$      
+Therefore we assume four population parameters $\mu_1$, $\mu_2$, $\sigma_1$, $\sigma_2$.     
+We use the sample statistics as estimates of the population statistics. Therefore,    
+$\bar{y}_1$(sample mean for control group) as estimate for $\mu_1$   
+$\bar{y}_2$(sample mean for incentive group) as estimate for $\mu_2$    
+$s_1$(sample standard deviation for control group) as estimate for $\sigma_1$     
+$s_2$(sample standard deviation for incentive group) as estimate for $\sigma_2$
+
+
+## Question 3
+
+**Four-step process: ASSESS model**
+
+Compare your model to a simpler model where no explanatory variable is used to explain *WeightLoss*: $$Y = \mu + \epsilon \sim N(\mu, \sigma)$$ Assess which model is better (state the hypotheses, run the test, report the test statistic, $P$-value and draw a conclusion). (Hint: Lecture 3)
+
+**Answer**:  The null hypothesis is that the two groups have the same amount of weight loss i.e. the entire group follows one normal distribution and incentive has no effect on weight loss 7 months after the start of the experiment (3 months after incentives stopped). The alternative hypothesis is that each group follows a different normal distribution and there is significant difference in weight loss between the control and the incentive group i.e. money incentive has persisting effect on weight loss. To assess which model is better, we run a two-sample t-test in which 
+$$
+t=\frac{\left(\bar{y}_1-\bar{y}_2\right)-0}{\sqrt{\frac{{s_1}^2}{n_1}-\frac{{s_2}^2}{n_2}}}
+$$
+Since the t-test shows that $t=-0.81$, and $P=0.42>0.05$, the two groups are not significantly different in weight loss. Therefore, we reject the alternative hypothesis and keep the null hypothesis that there is no significant weight loss in control and incentive groups. The better model is $Y = \mu + \epsilon \sim N(\mu, \sigma)$. 
+
+```{r, fig.width=5, fig.height=3}
+t.test(WeightLoss ~ Group, data=Weight)
+```
+
+
+
+## Question 4
+
+**Four-step process: ASSESS error**
+
+Assess whether your assumptions for the error term in the model are satisfied. **Note**: in the previous step, if you find your model is better than the simpler model, you should assess the error assumption for **your proposed model**; however, if you could not find evidence that your model is better than the simpler model, you should assess the error assumption for **the simpler model**. (Hint: Lecture 3)
+
+**Answer**:  Based on the Q-Q plot generated, the error term follows normal distribution and thus the assumption is satisfied for the simpler model (null hypothesis). 
+
+```{r, fig.width=5, fig.height=3}
+err <- Weight$WeightLoss 
+s.err <- ( err- mean(err))/sd(err) #standardization 
+qqnorm(s.err, pch=19, col="orange") #Q-Q plot
+abline(a=0, b=1) #Add the y=x line
+```
+
+
+
+## Question 5
+
+**Four-step process: USE**
+
+What is your overall conclusion for this analysis? Do incentives for weight loss still work at the seventh month? What should we be aware of when we use the model? (Hint: Lecture 3)
+
+**Answer**:  Since there is no significant difference in weight loss between the control and incentive group after seven months (three months after the incentive ended), incentives for weight loss do not work at the seventh month and hence have no persisting effect. We need to be aware that since most test subjects are adult men (34 adult men and 2 adult women in the original four month test period), the conclusion can only be about adult men. Also, if the subject selection is not random, the conclusion cannot be generalized to other adult men. 
+
+
+
+## Question 6
+
+1. Look at the values of $t$ statistics in your analysis (7-month weight loss) and the analysis in Lecture 3 (4-month weight loss). Comment on how group difference (numerator of the $t$ statistic) and its variability (denominator of the $t$ statistic) may influence the value of $t$ statistic and the P-value. (Hint: Lecture 4)
+2. Compare your analysis to the analysis in class. Can you think of any reason why the conclusions about financial incentives for weight loss are different in the two analyses?
+
+**Answer**:  
+
+1. As group difference gets bigger, the numerator of $t$ statistic gets bigger and therefore $t$ statistic gets bigger, leading to a smaller P-value. On the other hand, as variability becomes more significant, the denominator of $t$ statistic gets bigger and $t$ statistic itself gets smaller, leading to a greater P-value. 
+
+2. The sample SDs for both groups in the 7-month weight loss dataset ($s_1=9.8$, $s_2=12.1$) are larger than those in the 4-month dataset ($s_1=9.1$, $s_2=9.4$), thus leading to a larger denominator and a larger P-value. On the other hand, the group difference in the 7-month dataset ($|\bar{y}_1-\bar{y}_2|=|4.6-7.8|=3.2$) is smaller than that of the 4-month dataset ($|\bar{y}_1-\bar{y}_2|=|3.9-15.7|=11.8$), hence leading to a larger numerator and a larger P-value. Hence overall the P-value for 7-month weight loss data t-test is larger than that for the 4-month weight loss data t-test. This also logically makes sense because as the financial incentive is withdrawn, people may lose motivation and the control and incentive groups eventually become similar in 3 months. 
+
+
+## Question 7
+
+Let's re-visit the `HorsePrice` dataset we used in class and Homework 1. **Study whether male and female horses have different sale prices using the four-step framework.** Since we already did exploratory data analysis in class (Lecture 2 Slide 5~8), you can skip it in the CHOOSE step.
+
+**Answer**:  
+**CHOOSE**
+*The exploratory data analysis on each variable is omitted since it was done in Lecture 2.*    
+The explanatory variable is horse sex and the response variable is horse price.
+There are 50 horses in this sample, 20 of which are females and 30 of which are males. An exploratory data analysis on the relationship between horse sex and price are as follows. I will use normal distributions to model the price for each of the two groups (male and female horses). $T$-test will then be used to evaluate whether there is difference in price between the two groups. 
+
+------------------------------------------------------
+ Group       Size       Sample Mean        Sample SD
+----------- ---------- ------------------ ------------
+ Male        $n_1=30$  $\bar{y}_1=33730$   $s_1=13285$
+ 
+ Female      $n_2=20$  $\bar{y}_2=16505$   $s_2=11043$
+------------------------------------------------------
+
+```{r, fig.width=5, fig.height=3}
+horse <- read.table("/home/stat021f18/datasets/HorsePrices.txt",
+                    sep="\t", header=T)
+str(horse)
+price.male <- horse$Price[horse$Sex=="m"]
+price.female <- horse$Price[horse$Sex=="f"]
+mysummary <- function(x){c(number=length(x),mean=mean(x),sd=sd(x))}
+mysummary(price.male)
+mysummary(price.female)
+hist(price.male, breaks=15, col="lightblue", freq=F,
+ xlab="Price $", main="Histogram of Price for Male horses")
+hist(price.female, breaks=15, col="lightpink", freq=F,
+ xlab="Price $", main="Histogram of Price for Female horses")
+boxplot(horse$Price~horse$Sex, col=c("lightblue","lightpink"),
+ xlab="Group", main="Box Plot of Horse Prices")
+```
+
+**FIT**
+
+Data($Y$) = Model($f(X)$) + Error ($\epsilon$)     
+For male horse prices: $Y=\mu_1+\epsilon_1$, where $\epsilon_1 \sim N(0,\sigma_1) \Rightarrow Y \sim N(\mu_1, \sigma_1)$       
+For female horse prices: $Y=\mu_2+\epsilon_2$, where $\epsilon_2 \sim N(0,\sigma_2) \Rightarrow Y \sim N(\mu_2, \sigma_2)$      
+Therefore we assume four population parameters $\mu_1$, $\mu_2$, $\sigma_1$, $\sigma_2$.     
+We use the sample statistics as estimates of the population statistics. Therefore,    
+$\bar{y}_1$(sample mean for control group) as estimate for $\mu_1$   
+$\bar{y}_2$(sample mean for incentive group) as estimate for $\mu_2$    
+$s_1$(sample standard deviation for control group) as estimate for $\sigma_1$     
+$s_2$(sample standard deviation for incentive group) as estimate for $\sigma_2$
+
+
+**ASSESS model**     
+Compare your model to a simpler model where no explanatory variable is used to explain *WeightLoss*: $$Y = \mu + \epsilon \sim N(\mu, \sigma)$$  
+The null hypothesis $H_0$ is that the two groups have the same price distribution i.e. the entire group follows one normal distribution and sex has no effect on horse price. The alternative hypothesis is that each group follows a different normal distribution and there is significant difference in weight loss between the control and the incentive group. To assess which model is better, we run a two-sample t-test in which 
+$$
+t=\frac{\left(\bar{y}_1-\bar{y}_2\right)-0}{\sqrt{\frac{{s_1}^2}{n_1}-\frac{{s_2}^2}{n_2}}}
+$$
+
+```{r, fig.width=5, fig.height=3}
+t.test(Price ~ Sex, data=horse)
+```
+
+Since the $t$-test shows that $t=-4.98 \sim t(45.6)$ and $P-value=9.7*10^{-6}<0.05$, there is a significant difference in price due to sex and we reject the null hypothesis.       
+
+**ASSESS error** 
+```{r, fig.width=5, fig.height=3}
+err.male <- horse$Price[horse$Sex=="m"] 
+s.err.male <- ( err.male- mean(err.male))/sd(err.male) #standardization 
+qqnorm(s.err.male, pch=19, col="lightblue") #Q-Q plot
+abline(a=0, b=1) #Add the y=x line
+err.female <- horse$Price[horse$Sex=="f"] 
+s.err.female <- ( err.female- mean(err.female))/
+  sd(err.female) #standardization 
+qqnorm(s.err.female, pch=19, col="lightpink") #Q-Q plot
+abline(a=0, b=1) #Add the y=x line
+```
+
+Since we can see from the Q-Q plot for error terms in both male group and female group roughly follow normal distribution, we know that the assumption for the alternative hypothesis is satisfied.    
+**USE**     
+We learn from this model that there is difference in horse price due to sex. Male horses generally are more expensive than female horses. We need to be aware that if the subject selection is not random, the conclusion cannot be generalized for all horses. 
+
+## Question 8
+
+In Lecture 4 (Slide 15~19), we learned the property of **variance**. Here let's simulate two variables $Y_1$ from $N(-3, 1)$ and $Y_2$ from $N(4, 2)$ as below.
+
+```{r, fig.width=5, fig.height=3}
+set.seed(10)
+y1 <- rnorm(100, mean=-3, sd=1)
+y2 <- rnorm(100, mean=4, sd=2)
+```
+
+1. Calculate the mean and SD of the two samples `y1` and `y2` using R. Do you think they are close to the population parameters? In R, to calculate the variance, you can either do `sd()^2` or `var()`. Use the `var()` function to compute the variance of $y_1$ and $y_2$.
+2. Use the formula in Lecture 4 to calculate the variances of $y_1 + y_2$ and $-2y_1 - 1.5y_2$ by hand. (Hint: you need the variances of $y_1$ and $y_2$ found in part 1)
+3. Verify the results in part 2 using R, i.e. applying the `var()` directly on `y1 + y2` and `-2*y1 - 1.5*y2`. What do you find?
+
+**Answer:**
+
+1. Mean of $y_1 = -3.14$, SD of $y_1 = 0.94$, Mean of $y_2 = 3.81$, SD of $y_2 = 1.94$. They are relatively close to the population parameters.    
+Additionally, $Var(y_1)=0.89$ and $Var(y_2)=3.76$
+
+```{r, fig.width=5, fig.height=3}
+mysummary(y1) 
+mysummary(y2)
+var(y1) 
+var(y2)
+```
+
+
+
+2. $Var(y_1+y_2)=Var(y_1)+Var(y_2)=4.65$    
+$Var(-2y_1-1.5y_2)=2^2Var(y_1)+1.5^2Var(y_2)=12.00$
+
+```{r, fig.width=5, fig.height=3}
+0.885925+3.759483
+2^2*0.885925+1.5^2*3.759483 
+```
+
+3. Using R, $Var(y_1+y_2)=4.43$ and $Var(-2y_1-1.5y_2)=11.37$, both of which are smaller than the hand-calculated results above. This could mean that $y_1$ and $y_2$ are not independent events.  
+
+```{r, fig.width=5, fig.height=3}
+var(y1+y2)
+var(-2*y1-1.5*y2)
+```
+
+## A story about the sale prices of racehorses
+
+Data scientist and New York Times opinion writer Seth Stephens-Davidowitz told an interesting story about the sale prices of racehorses in his book *Everybody lies: Big Data, New Data, and What the Internet Can Tell Us About Who We Really Are*. Here is a summary of the story I copied from <https://qz.com/1043019>.
+
+> Davidowitz relays the story of how the race horse analyst Jeff Seder used modern data collection methods and statistical correlation to **predict the greatness of racehorses**, most notably 2015 Triple Crown winner [American Pharoah](https://en.wikipedia.org/wiki/American_Pharoah).
+> 
+> Historically, horses were judged by their pedigree. If a horse's parents or siblings were great performers, then it was thought they also had a shot at success on the racetrack, and would sell for a lot of money at auction. Agents might also examine a young horse’s size or gait.
+> 
+> But Seder, who has an MBA and law degree from Harvard University, found that none of these factors were all that predictive of greatness. Armed with a variety of tools, including a portable ultrasound machine, he went on the hunt for more telling factors.
+> 
+> After years of collecting data on the attributes of young horses and comparing them to their earnings on the track, Seder found one unusual physical attribute that was highly predictive: the size of the horse's left ventricle. American Pharoah had an enormous left ventricle. Along with the fact that all of his other attributes were in the range of what's expected of a good thoroughbred, this made American Pharoah a good bet to be a great horse.
+> 
+> **Attributes of American Pharaoh as a 1-year-old**
+> 
+> -------------------------------
+>           Attribute Percentile
+> ------------------- -----------
+>              Height 56
+> 
+>              Weight 61
+> 
+>            Pedigree 70
+> 
+> Left Ventricle size	96.6
+> -------------------------------
+> 
+> Davidowitz uses this story to make the point that new data sources are most powerful in domains where deep data analysis has been rare. There is not as much to learn from new data in analytics-saturated fields like finance or baseball, but there are still plenty of fields, like horse racing, that still rely heavily on traditions and gut feel.
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_2.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

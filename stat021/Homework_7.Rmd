@@ -1,0 +1,368 @@
+---
+title: "STAT021 Homework 7"
+author: "Yuchao Wang"
+date: "November 7, 2018"
+output: pdf_document
+fontsize: 12pt
+---
+
+
+## Goals
+
+* Understand multiple linear regression:
+    + Model definition;
+    + Interpretation and inferences for the slopes;
+    + ANOVA $F$ test and $R^2$ for model assessment.
+* Use nested $F$ test and adjusted $R^2$ to compare models.
+
+
+## Question 0 (not really a question) (5%)
+
+* DataCamp **Data Visualization with ggplot2 (Part 1)** by 11/7/2018 11:55 PM **together with this problem set**.
+
+## Question 1 ~ 10
+
+The file `MLB2007Standings.RData` at `/home/stat021f18/datasets` (note this is an `.RData` file) contains some variables for Major League Baseball (MLB) teams from the 2007 regular season. The winning percentages are in the variable *WinPct* and scoring variables include *Runs*, *Hits* and *ERA* (earned run average, the average runs against a team per game). Consider an MLR model to predict winning percentages using *Runs*, *Hits* and *ERA*.
+
+## Question 1
+
+Load the file into R. Identify the response variable and explanatory variables and denote them as $Y$ and $X$'s. Conduct exploratory data analysis on the data and comment.
+
+**Answer**:  
+Response variable, $Y$, is winning percentage, *WinPct*.     
+Explanatory variables are $X_1$: *Runs*, $X_2$: *Hits*, and $X_3$: *ERA* (earned run average).     
+The response variable *WinPct* has a bimodal distribution and hence does not follow normal distribution. Hence the normality assumption of the error term may not be fulfilled. *Runs* and *Hits* seems to be positively linearly correlated with *WinPct* respectively, while *ERA* seems negatively linearly correlated with *WinPct*. Among the explanaroty variables, *Hits* and *Runs* seem strongly positively correlated and there seems no significant relationship between *Runs* and *ERA* or *Hits* and *ERA*.  
+
+```{r, error=FALSE}
+load("/home/stat021f18/datasets/MLB2007Standings.RData")
+ls() 
+
+#Exploratory Data Analysis
+library(psych) 
+describe(MLB2007Standings)[,2:4] # summary statistics
+
+library(ggplot2)
+library(GGally)
+ggpairs(data=MLB2007Standings[, c("Runs", "Hits", "ERA", "WinPct")])
+```
+
+
+
+## Question 2
+
+Write down the multiple linear regression model. Fit the MLR model in R using the `lm()` function. Identify the values for all the parameter estimates including the residual standard error. Write down the estimated regression line.
+
+**Answer**:  
+
+$Y=\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon$, where $\epsilon \overset{iid}{\sim} N(0,\sigma)$             
+$\beta_0=0.4499$    
+$\beta_1=4.337 *10^{-4}$    
+$\beta_2=8.425*10^{-5}$      
+$\beta_3=-9.266*10^{-2}$     
+Residual standard error, $\hat{\sigma} = 0.02618$
+
+Estimated regression line:       
+$\hat{y}=0.4499 + 4.337 *10^{-4} x_1 + 8.425*10^{-5} x_2 - 9.266*10^{-2}  x_3$
+
+
+```{r}
+MLBm1 <- lm(WinPct ~ Runs + Hits + ERA, data=MLB2007Standings)
+summary(MLBm1)
+```
+
+
+
+## Question 3
+
+Interpret the estimate and individual $t$ test for each slope. Draw a conclusion on the relationship between the response variable and the predictors. (Lecture 13 Slide 14~16)
+
+**Answer**:  
+1. Slope of *Runs*:    
+*WinPct* will be increase by $4.337*10^{-4}$ unit as *Runs* increased by 1 unit, given that *Hits* and *ERA* are held constant.     
+$t$ test for the slope of *Runs*:      
+Given that *Hits* and *ERA* are held constant, *Runs* has a highly significant positive linear relationship with *WinPct*.   
+2. Slope of *Hits*:    
+*WinPct* will be increase by $8.425*10^{-5}$ unit as *Hits* increased by 1 unit, given that *Runs* and *ERA* are held constant.     
+$t$ test for the slope of *Hits*:      
+Given that *Runs* and *ERA* are held constant, *Hits* does not have a significant linear relationship with *WinPct*.     
+3. Slope of *ERA*:    
+*WinPct* will be decrease by $9.266*10^{-2}$ unit as *ERA* increased by 1 unit, given that *Runs* and *Hits* are held constant.     
+$t$ test for the slope of *ERA*:      
+Given that *Hits* and *Runs* are held constant, *ERA* has a highly significant negative linear relationship with *WinPct*. 
+
+
+
+
+## Question 4
+
+Compare the $t$ test for each slope in the MLR model to the $t$ test for the correlation of the response variable and each predictor.
+
+**Answer**:     
+Unlike in SLR, the $t$ test for each slope and the $t$ test for correlation between response variable and explanatory variable/predictor are no longer the same in MLR. This is because the $t$ test for slope still considers the other predictors in the MLR model (though it holds them constant) and thus follows $t(n-K-1)$ whereas the $t$ test for correlation only considers the response variable and each predictor and follows $t(n-2)$ instead. Their test statistics and hypotheses are also not the same. For example, though *Hits* may be significantly correlated with *WinPct* when considered alone, *Hits* is no longer significant in the MLR when *Runs* and *ERA* are also considered.  
+
+```{r}
+cor.test(~ WinPct + Runs, data=MLB2007Standings)
+cor.test(~ WinPct + Hits, data=MLB2007Standings)
+cor.test(~ WinPct +  ERA, data=MLB2007Standings)
+```
+
+------------------------------------------------------------------------------
+                      $t$ test for slope in MLR     $t$ test for correlation
+--------------------- ----------------------------- --------------------------
+ *WinPct* vs. *Runs*   $t=3.759$, $P=0.000874$          $t=4.1334$, $P=0.0002936$
+ 
+ *WinPct* vs. *Hits*   $t=0.848$, $P=0.404176$          $t=2.8931$, $P=0.007305$
+ 
+ *WinPct* vs. *ERA*    $t=-7.746$, $P=3.22*10^{-8}$     $t=-4.5606$, $P=9.213*10^{-5}$
+------------------------------------------------------------------------------
+
+
+
+## Question 5
+
+State the null and alternative hypothesis of the ANOVA $F$ test for the model. How would you compute the degrees freedom of the $F$ test? Draw a conclusion based on the test. Report and interpret the $R^2$ value for the model.
+
+**Answer**:    
+$H_0: \beta_1=\beta_2=\beta_3=0$    
+$H_a:$ at least one $\beta_k \neq 0, k=1,2,3$    
+Since the test statistic follows $F(K, n-K-1)$ and $n=30,K=3$, the degrees of freedom of the $F$ test are 3 and 26. Since the $p$-value $=1.367*10^{-9}<<0.05$, we can conclude that the model with *Runs*, *Hits*, and *ERA* is significant in explaning *WinPct*.     
+$R^2=0.8123$ which means that 81.23% of the variability in $WinPct$ can be explained by variabilities in *Runs*, *Hits*, and *ERA* and hence the model is strong in its explanatory power.  
+
+
+## Question 6
+
+Check the assumptions for this MLR model.
+
+**Answer**:    
+There is no significant violation of the assumptions of the MLR model, though the residuals show a slight right skew in their distribution. In detail, linearity is fulfilled (no clear pattern in residual vs. fitted values plot). Zero mean is always true. Constant variance is fulfilled both because the residial vs. fitted values scatter plot shows about the same distribution (except for one or two points) and because BP test shows no significant result. As aforementioned, normality is roughly fulfilled. The independence and randomness depend on the data collection process. 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+Assess <- data.frame(Residuals=MLBm1$residuals,
+ FittedValues=MLBm1$fitted.values)
+# Residuals vs. Fitted Values
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+
+ ggtitle("Residuals vs. Fitted Values")
+# Normal Q-Q plot
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.7)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+
+ ggtitle("Normal Q-Q Plot")
+# Histogram of residuals
+ggplot(Assess, aes(Residuals))+
+ geom_histogram(bins=20, fill="skyblue3", alpha=0.7)+
+ ggtitle("Histogram of Residuals")
+#BP test
+library(lmtest)
+bptest(MLBm1)
+```
+
+
+
+
+## Question 7
+
+Are there unusual points for this model?
+
+**Answer**:    
+There are two points with unusual leverage and two other points with unusual standard residuals, but no point is identified as unusual in terms of Cook's distance. 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+library(MASS)
+MLB.complete <- MLB2007Standings[complete.cases(MLB2007Standings), ] 
+n <- nrow(MLB.complete) # sample size
+K <- 3 # number of predictors
+Leverage <- hatvalues(MLBm1) # leverage values
+StdRes <- stdres(MLBm1) # standardized residuals
+CooksD <- cooks.distance(MLBm1) # Cook's D
+unusual <- data.frame(MLB.complete, Leverage, StdRes, CooksD)
+cd <- function(h, type){sqrt((1-h)/h)*type} 
+diagplot <- ggplot(unusual, aes(x=Leverage, y=StdRes, label=Team))+
+ geom_point(color="skyblue3", size=2.5, alpha=0.7)+
+ geom_vline(xintercept = c(8/n, 12/n), color="red", linetype=2)+
+ geom_hline(yintercept = c(-3,-2,2,3), color="orange", linetype=2)+
+ stat_function(fun=cd, args=list(type=sqrt(K+1)), color="blue", 
+               linetype=2)+
+ stat_function(fun=cd, args=list(type=-sqrt(K+1)), color="blue", 
+               linetype=2)+
+ stat_function(fun=cd, args=list(type=sqrt(0.5*(K+1))), color="blue", 
+               linetype=2)+
+ stat_function(fun=cd, args=list(type=-sqrt(0.5*(K+1))), color="blue", 
+               linetype=2)+
+ ggtitle("Diagnostic Plot")
+diagplot
+```
+
+
+
+
+## Question 8
+
+Consider the seven models
+
+Model A. *WinPct* ~ *Runs*  
+Model B. *WinPct* ~ *Hits*  
+Model C. *WinPct* ~ *ERA*  
+Model D. *WinPct* ~ *Runs* + *Hits*  
+Model E. *WinPct* ~ *Runs* + *ERA*  
+Model F. *WinPct* ~ *Hits* + *ERA*  
+Model G. *WinPct* ~ *Runs* + *Hits* + *ERA*
+
+1. Conduct a nested $F$ test to compare Model A to E. Which model is better? Compare this nested $F$ test to the $t$ test for the slope of *ERA* in Model E in terms of null and alternative hypotheses, $F$ and $t$ value, and $P$-values. What do you find?
+
+**Answer**:    
+Since the $p$-value$=2.522*10^{-8}<<0.05$ for the nested $F$-test, we conclude that *ERA* is significant in explaining *WinPct* given that *Runs* is held constant, and Model E containing two predictors is significantly better than model A containing one predictor.     
+Comparing nested $F$ test to the $t$ test for slope of *ERA* in Model E, we notice that their $p$-values are equal ($2.522*10^{-8}$) and $F=t^2$ since $t=-7.741$ and $F=59.921$. Both of the tests have the same $H_0: \beta_{ERA}=0$ and $H_a: \beta_{ERA} \neq 0$.  
+
+```{r}
+#Nested F test for A and E
+mA <- lm(WinPct ~ Runs, data=MLB2007Standings)
+mE <- lm(WinPct ~ Runs + ERA, data=MLB2007Standings)
+anova(mA,mE) 
+
+#t-test for slope of ERA in model E 
+summary(mE)
+```
+
+
+
+
+2. Conduct a nested $F$ test to compare Model C to E. Which model is better? Summarize the $R^2$ and adjusted $R^2$ values for Model A, C and E in the following table. Discuss which model is the best using these values and the two nested $F$ tests you just carried out in part 1 and 2.
+
+**Answer**:     
+Since the $p$-value$=7.469*10^{-8}<<0.05$ for the nested $F$-test, we conclude that *Runs* is significant in explaining *WinPct* given that *ERA* is held constant, and Model E containing two predictors is significantly better than model C containing one predictor.      
+Based on the $R^2_{adj}$ values, Model E is much stronger in its explanatory power as compared to Model C and Model A ($0.7928>0.4057>0.3568$), and the $F$ tests show that all three models are significant. We also know from the two nested $F$ tests above that Model E is significantly different from both Model A and Model C. Therefore, overall, Model E is the best model among the three as it accounts for 80.71% of the variability in response variable (thus strong) and is significant. 
+
+
+```{r}
+#Nested F test for C and E
+mC <- lm(WinPct ~ ERA, data=MLB2007Standings)
+anova(mC,mE) 
+
+#Model A 
+summary(mA) 
+
+#Model C 
+summary(mC) 
+
+#Model E
+summary(mE) 
+```
+
+----------------------------------------------------
+                               $R^2$    $R^2_{adj}$
+----------------------------- -------- -------------
+ A. *WinPct* ~ *Runs*          0.3789     0.3568
+ 
+ C. *WinPct* ~ *ERA*           0.4262     0.4057
+ 
+ E. *WinPct* ~ *Runs* + *ERA*  0.8071     0.7928
+----------------------------------------------------
+
+
+
+
+3. Conduct a nested $F$ test to compare Model A to D. Which model is better? Compare this nested $F$ test to the $t$ test for the slope of *Hits* in Model D in terms of null and alternative hypotheses, $F$ and $t$ value, and $P$-values. What do you find?
+
+**Answer**:    
+The nested $F$ test shows that Model D is not significantly different from Model A and since Model A involves only one predictor (thus simpler than Model D), Model A is better than Model D.      
+Comparing nested $F$ test to the $t$ test for slope of *Hits* in Model E, we notice that their $p$-values are equal (0.944) and $F=t^2$ since $t=-0.071$ and $F=0.0051$. Both of the tests have the same $H_0: \beta_{ERA}=0$ and $H_a: \beta_{ERA} \neq 0$.  
+
+```{r}
+#Nested F test for A and D 
+mD <- lm(WinPct ~ Runs + Hits, data=MLB2007Standings)
+anova(mA, mD) 
+
+#Model D
+summary(mD)
+```
+
+
+
+
+4. Conduct a nested $F$ test to compare Model B to D. Which model is better? Summarize the $R^2$ and adjusted $R^2$ values for Model A, B and D in the following table. Discuss which model is the best using these values and the two nested $F$ tests you just carried out in part 3 and 4.
+
+**Answer**:     
+The $F$ tests for both Model B and D yields $p$-values smaller than 0.05 and hence both models are significant. From the nested $F$ test comparing Model B to D we conclude that Model D is significantly different from Model B. We also observe from their $R^2$ and adjusted $R^2$ values that Model D has stronger explanatory power than Model B (by comparing adjusted $R^2$ values) and Model D can account for 37.91% of the variability in response variable *WinPct*. Therefore, Model D is better than Model B.     
+From nested $F$ test comparing Model B and D, we know that Model D is significantly better than Model B. From nested $F$ test comparing Model A and D, we conclude that Model D is not significantly better than Model A and, since Model A is simpler, Model A is better than Model D. Therefore, Model A is the best model among Model A, B, and D. This conclusion is corroborated by their adjusted $R^2$ values as Model A has the highest adjusted $R^2$ value (which is the value used in comparing across models) even though Model D has the highest $R^2$ value. This is because adjusted $R^2$ values penalize for additional number of predictors.  
+
+```{r}
+#Model B
+summary(mB <- lm(WinPct ~ Hits, data=MLB2007Standings))
+
+#Model D
+summary(mD) 
+
+#Nested F test for B and D
+anova(mB, mD)
+```
+
+----------------------------------------------------
+                               $R^2$    $R^2_{adj}$
+----------------------------- -------- -------------
+ A. *WinPct* ~ *Runs*          0.3789     0.3568
+ 
+ B. *WinPct* ~ *Hits*          0.2301     0.2026
+ 
+ D. *WinPct* ~ *Runs* + *Hits* 0.3791     0.3331
+----------------------------------------------------
+
+
+
+
+5. In all the comparisons above, do you find any one model that has larger $R^2$ but smaller adjusted $R^2$ value than the other model? Discuss how it could be possible.
+
+**Answer**:  
+Model D has a higher $R^2$ value (0.3797) than Model A (0.3789) but a lower adjusted $R^2$ value (0.3331) than Model A (0.3568). This is because adjusted $R^2$ values penalize models with more predictors, especially when the additional predictor(s) does not significantly increase the model's explanatory power. 
+
+
+
+6. Based on your answers to part 1 to 5, without using any R functions, suggest the best model among Model A, B, C, D and E.
+
+**Answer**:    
+Model E is the best among the five models because the model is significant and has the highest $R^2$ and adjusted $R^2$ values (thus strongest explanatory power of the response variable *WinPct*). 
+
+
+7. Conduct a nested $F$ test to compare Model E and F. Why isn't there any $F$ and $P$ values in the output?
+
+**Answer**:    
+The nested $F$ test requires one model to contain predictors that are a subset of the predictors in the other model. Model E and F does not fulfill this criterion and hence the test statistics cannot be computed and there will therefore not be a $p$-value.
+
+```{r}
+#Model F
+mF <- lm(WinPct ~ Hits + ERA, data=MLB2007Standings)
+
+#Nested F test for E and F
+anova(mE, mF)
+```
+
+
+
+
+8. Suggest the best model among the seven models by comparing $R^2$, adjusted $R^2$ and conducting nested $F$ test if necessary.
+
+**Answer**:   
+First we note that all seven models are significant based on the $F$ tests. We can therefore compare them in terms of strength of their explanatory power by looking at their adjusted $R^2$ values. We note that Model E and Model G both have adjusted $R^2$ values that are apparently higher than the rest (their values are 0.7928 and 0.7906 respectively, while four other models have adjusted $R^2$ values of 0.4 and lower and Model F has a value of 0.6888, which is still much lower than those of Model E and G). Due to the small difference between the adjusted $R^2$ values, we can then conduct a nested $F$ test to see if Model E is significantly different from Model G, as Model G contains only one additional predictor *Hits*. The nested $F$ test gives $p$-value of $0.4042>0.05$ and hence Model G and E are not significantly different. And since Model E contains less predictors and thus is simpler, we can conclude that Model E is better than Model G. Overall, we can conclude that Model E is the best model among the seven. 
+```{r}
+#Model F
+summary(mF)
+
+#Model G
+summary(mG <- lm(WinPct ~ Runs + Hits + ERA, data=MLB2007Standings)) 
+
+#Nested F test for E and G 
+anova(mE, mG) 
+```
+
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_7.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

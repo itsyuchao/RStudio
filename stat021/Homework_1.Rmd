@@ -1,0 +1,267 @@
+---
+title: "STAT021 Homework 1"
+author: "Yuchao Wang"
+date: "September 11, 2018"
+fontsize: 12pt
+output: pdf_document
+---
+
+## To get started...
+
+Congratulations! You finally have access to this file. Let's start from here. Insert your name above at _Your name here_.
+
+Now, click the "Knit" button above and you may get a message about allowing pop-ups. Allow them (or click *Try Again*) and you will see a new window showing the output .pdf file. This **Homework_1.pdf** file is generated and stored on RStudio server in your Home folder (see lower right panel).
+
+**Knit** your document constantly while you are doing the homework to make sure everything works well. Every time when you Knit the document, both the .Rmd file and .pdf file will be automatically saved. **Avoid** knitting the file after you answer all the questions. If there is any syntax error, it will be very hard to find. Try to knit it when you finish each question, or even more frequently than that!
+
+Note: in this .Rmd file, you will see empty lines here and there. These empty lines are important. Removing them may makes the output .pdf file messed up.
+
+
+## Goals
+
+* Get familiar with RMarkdown.
+* Write R codes in code chunks.
+* Review Normal distribution.
+* Revisit the idea of Central Limit Theorem.
+
+
+## Question 0 (not really a question) (20%)
+
+1. Log in to Swarthmore RStudio Server (5%). Done!
+2. Sign up [here](https://docs.google.com/spreadsheets/d/10mRK70UVAlubQ0MUAg4IFH_LzUSdwbFjQdlOyfkvFS0/edit?usp=sharing) for a 10-minute meeting with me (5%) if you have not done so.
+3. Assignments on DataCamp (10%): Introduction to R *Chapter 2* and *3* (You should have finished *Chapter 1* already).
+    + In Homework 2, I will assign Introduction to R *Chapter 4*, *5* and *6*.
+
+\newpage
+
+## Question 1 (3%)
+The gray area below is called a **code chunk**. A code chunk in .Rmd file always starts with three dots followed by "{r}" and ends with three dots. You can copy and paste the following chunk anywhere else to start a new chunk. All the codes within the code chunk will be interpreted and executed by R. Both the R codes and the R output will be shown in the output .pdf file. **Add a new line after `1 + 1` to calculate `(2+10)/5`**. Run the code chunk by clicking on the green triangle button on the top right of the code chunk. Knit the file to see how it looks like in the output .pdf file.
+
+```{r}
+1 + 1
+(2+10)/5
+```
+
+
+## Question 2 (25%)
+All the datasets for this course are stored in a shared folder on RStudio server `/home/stat021f18/datasets`. You can import a `.txt` file stored in that folder using the `read.table()` function. The following codes input the dataset `HorsePrices.txt` used in Lecture 2.
+
+```{r}
+horse <- read.table("/home/stat021f18/datasets/HorsePrices.txt",
+                    sep="\t", header=T)
+ls()
+head(horse)
+# In the knitted pdf file, sometimes the R codes exceed the code box if
+# the line is too long. You can easily write your codes in multiple lines
+# as above. Check your .pdf file everytime you knit it. Any occurrence of
+# code overflow will result in 2 points off.
+```
+
+1. The file name is `HorsePrices.txt`. When it is read into R, it is named as `horse`. To check the names of objects that are currently available in the R environment, add a new line `ls()` in the code chunk above.
+
+2. Add another line `head(horse)` above to look at the first 6 rows of the dataset. How many variables are there in this dataset? List their names.
+
+**Answer**:  
+There are 5 variables - HorseID, Price, Age, Height, and Sex. 
+
+3. Which ones are categorical variables? Which are quantitative variables? Is there a label variable in this dataset?
+
+**Answer**:  
+Sex is a categorical variable. Price, Age, and Height are quantitative variables. HorseID is a label variable. 
+
+4. Calculate the mean, standard deviation, median and quartiles of *Height* using R (type codes in the following code chunk). Report these values at the **Answer** section and explain what they mean. (Hint: Lecture 2 Slide 7; If you get NA values in the output, add `na.rm=TRUE` in **each** function and try again; This argument removes the NA values in the variable before calculating the mean/sd/median/quartiles.)
+
+```{r}
+mean(horse$Height, na.rm = TRUE)
+sd(horse$Height, na.rm = T)
+median(horse$Height, na.rm = T)
+quantile(horse$Height,probs = c(0.25,0.5,0.75), na.rm = T)
+
+```
+
+**Answer**:  
+The mean height is 16.32979 feet, which means the average height of all horses in this sample is 16.32979 feet.    
+The standard deviation is 0.6595996 foot. This means that, modelling the current sample as a normal distribution, 68% of the horses will have a height within the range of 16.32979±0.6595996 feet.    
+The sample of horses has a median of 16.5 feet. Median means that equal number of horses have a height below or above 16.5 feet.    
+The first quartile is 16.00 feet and the third quartile is 16.75 feet. The second quartile is the same as the median i.e. 16.5 feet. Quartiles mean that 25% of the horses are shorter than 16.00 feet and 75% of the horses are shorter than 16.75 feet.    
+
+
+5. Generate a histogram for the *Age* variable and add a density curve to it (Hint: Lecture 2 Slide 11). From the histogram, do you think the *Age* variable is Normally distributed or not? Check the Normality of this variable using Normal Q-Q plot (Hint: Lecture 2 Slide 19).
+
+```{r}
+hist(horse$Age, breaks = 15, col = "lightblue", freq = F, xlab = "Age", 
+     ylab = "Density", main = "Histogram of Horse Ages")
+lines(density(horse$Age, adjust = 0.5), col = "red", lwd = 2)
+
+age <- horse$Age #having checked that there is no NA 
+s.age <- (age-mean(age))/sd(age)
+qqnorm(s.age, pch=18, col = "purple") 
+abline (a=0, b=1) 
+```
+
+**Answer**:  
+The age variable is generally normally distributed. This is supported by the Q-Q graph which shows that the points roughly follow the line y=x. 
+
+
+## Question 3 (12%)
+Let's learn how to write math notations and equations in .Rmd files.
+
+Math formulas can be written as *inline mode* or *display mode*. To include notations/equations inline with text, we start and end it with a single dollar-sign `$`. For example, $a+b=c$. To display a formula, we start and end it with two dollar-signs `$$`. For example,
+
+$$
+\frac{\frac{a}{b}}{\frac{c}{d}} = \frac{a}{b} \div \frac{c}{d} = \frac{ad}{bc}
+$$
+Some basics:
+
+* For subscripts and supscripts, use `_` and `^`: $x_1$, $a^2$, $y_{100}$, $b^{n_1}$, $x_n^2$, $\log_2 x$.
+    + Note: if you want to put $100$ as the subscript for $y$, you must use the curly braces around $100$: $y_{100}$. Otherwise, it will look like $y_100$.
+* Operation symbols: $a+2-b \times c = \sqrt[3]{d} \div \frac{e^2}{\log_{10} 20}$, $a > b < c \pm d \ge e \le f \ne g$.
+* Parentheses: ordinary symbols `()[]` make parentheses and brackets $(2+3)[4+4]$. Use `\{` and `\}` for curly braces $\{ \}$.
+    + For large size equations like $(\frac{\sqrt{a}}{b})^2 = c$, you can add `\left` and `\right` before the parentheses to make the sizes of the parentheses adjust automatically: $\left(\frac{\sqrt{a}}{b}\right)^2 = c$.
+* Sums and integrals: $\sum$, $\int$, $\sum x_i$, $\sum_{i=0}^n x_i$,
+
+$$
+\sum_{i=0}^n x_i + \int_{-\infty}^{\infty}y
+$$
+
+* Greek letters: $\alpha, \beta,\cdots, \mu, \cdots, \sigma,\cdots, \omega$. Uppercase: $\Delta, \cdots, \Omega$.
+
+For a full list of math symbols, see <http://reu.dimacs.rutgers.edu/Symbols.pdf>.
+
+**Practice**
+
+1. Type the formula for mean in Lecture 2 Slide 21 using **display mode**.
+2. Type the expression for "$X$ follows a Normal distribution with mean $\mu$ and standard deviation $\sigma$" using **inline mode** (Hint: Lecture 2 Slide 10 the 4th bullet point; the sign for "follow" is $\sim$).
+3. Type the density function of Normal distribution at the end of Slide 10 using **display mode**.
+4. Type everything in the blue box in Lecture 2 Slide 26.
+
+**Answer**:  
+
+1. 
+$$ 
+\bar{x} = \frac{x_1 + x_2 + \cdots +x_n}{n}
+$$
+
+2. $X\sim N(\mu,\sigma)$
+
+3.
+$$
+f(x) = \frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}
+\left(\frac{x-\mu}{\sigma}\right)^2}
+$$
+
+4. Let $\bar{x}$ be the mean of an SRS of size $n$ from a population having Normal distribution with mean $\mu$ and standard deviation $\sigma$. The mean and  standard deviation of $\bar{x}$ are $\mu_{\bar{x}}=\mu$ and $\sigma_{\bar{x}}= \frac{\sigma}{\sqrt{n}}$. And 
+$$
+\bar{x} \sim N \left( \mu, \frac{\sigma}{\sqrt{n}} \right)
+$$
+
+
+## Question 4 (20%)
+The NAEP U.S. history scores for twelfth-grade students are approximately $N(280, 30)$. Apply the 68-95-99.7 rule to answer question 1 and 2 below.
+
+1. Give the ranges of history score values that are within one, two, and three standard deviations of the mean.
+2. What is the proportions of students who have scores
+    a. Higher than 250?
+    b. Lower than 370?
+    c. Between 190 and 220?
+3. Use the `pnorm()` function to calculate the proportions of students who have scores below 200, above 300 and between 275 and 285. (Hint: Lecture 2 Slide 15)
+4. Use the  `qnorm()` function to find the 10th, 30th and 98th quantiles of the scores. (Hint: Lecture 2 Slide 15)
+
+```{r}
+68/2+50 #2(a) 
+100-(100-99.7)/2 #2(b)
+99.7/2-95/2 #2 (c) 
+pnorm(q=200, mean=280, sd=30) #3 below 200 
+1-pnorm(q=300, mean=280, sd=30) #3 above 300 
+pnorm(q=285, mean=280, sd=30)-pnorm(q=275, mean=280, sd=30) #3 275-285
+qnorm(p=0.1, mean=280, sd=30) #4 10th 
+qnorm(p=0.3, mean=280, sd=30) #4 30th
+qnorm(p=0.98, mean=280, sd=30) #4 98th
+```
+
+**Answer**:  
+
+1.     
+Within one standard deviation: $280\pm 30$ i.e. between 250 and 310    
+Within two standard deviations: $280\pm 60$ i.e. between 220 and 340   
+Within three standard deviations: $280\pm 90$ i.e. between 190 and 370  
+2. Type your answer below.
+    a. 84% of students have scores higher than 250. 
+    b. 99.85% of students have scores lower than 370. 
+    c. 2.35% of students have scores between 190 and 220. 
+
+3. Type your answer here.
+    a. 0.383% of students have scores below 200. 
+    b. 25.2% of students have scores above 300.
+    c. 13.2% of students have scores between 275 and 285. 
+4. Type your answer here.
+    a. 10th percentile is around 241.6. 
+    b. 30th percentile is around 264.3. 
+    c. 98th percentile is around 341.6.  
+
+
+## Question 5 (10%)
+The number of credits Swarthmore students take each semester is approximately Normally distributed with mean $\mu = 4.15$ and standard deviation $\sigma = 0.49$. You plan to take a simple random sample of size $n = 25$ and compute the average number of credits $\bar{x}$. Answer the following questions by typing the math notations and expressions. Add R code chunks whenever it is necessary.
+
+1. What is the standard deviation of the average number of credits $\bar{x}$? (Hint: Lecture 2 Slide 26)
+2. By Central Limit Theorem, what is the distribution of the average number of credits $\bar{x}$?
+3. Use the 95 part of the 68-95-99.7 rule to describe the variability of this sample mean.
+4. What is the approximate probability that a sample of 25 Swarthmore students has average number of credits $\bar{x} > 4.3$?
+5. How many students would you need to recruit if you want the standard deviation of $\bar{x}$ to be no larger than 0.05?
+
+**Answer**:  
+
+1. $\sigma_{\bar{x}}=\frac{\sigma}{\sqrt{n}}=\frac{0.49}{\sqrt{25}}=0.098$ 
+
+2. Normal distribution. 
+
+3. 
+```{r} 
+4.15+2*0.098
+4.15-2*0.098
+```
+There is a 95% chance that the mean number of credits of the 25 randomly-chosen students is between $4.15+2*0.098=4.346$ and $4.15-2*0.098=3.954$.  
+
+4. Type your answer here.
+```{r}
+1-pnorm(q=4.3, mean=4.15, sd=0.098)
+```
+There is a 6.29% chance that $\bar{x}>4.3$.
+
+5. Type your answer here.
+```{r}
+            
+```
+
+$\sigma_{\bar{x}}=\frac{\sigma}{\sqrt{n}}$     
+$n_{min}=\frac{{\sigma}^2}{{\sigma_{\bar{x}}}^2}=\frac{0.49^2}{0.05^2}=96.04$    
+Since the number of students must be an integer, there need to be at least 97 students for the standard deviation of $\bar{x}$ to be no larger than 0.05. 
+
+## Question 6 (10%)
+
+Read this [**article**](http://gravyanecdote.com/blog/makeovermonday/makeovermonday-global-temperature-is-spiralling-out-of-control/) and answer the following questions.
+
+1. Are the histograms showing population distributions, sample distributions or sampling distributions? Why?
+2. On average, what is the difference of median temperatures between time period 1900-1949 and 1850-1899? How about between 1950-1999 and 1850-1899, between 2000-2016 and 1850-1899? Give rough estimates based on the graphs.
+3. Discuss the important elements to display histograms.
+
+**Answer**:  
+
+1. The histograms show sampling distribution. Since we are interested in world temperature, the population in this case is temperature around the globe. We sample the average temperature of each month, and the histogram shows sampling distribution since the average temperature of each month (equal in size since each month is roughly the same length) is repeatedly taken.  
+
+2. Difference in median temperatures     
+between 1900-1949 and 1850-1899: 0.1°C       
+between 1950-1999 and 1850-1899: 0.3°C   
+between 2000-2016 and 1850-1899: 0.6°C  
+
+3. Labeling of the axes must make sense to someone reading it the first time. It is important to leave out extra information in the historgram (e.g. the marking for each specific month in this case). One should also use color to make the salient point stand out instead of confusing people with too much visual information. For example, the author of the article used crimson only for data after 2000 and using gray for the other datasets to highlight the irrefutable fact that global warming exists. 
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_1.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

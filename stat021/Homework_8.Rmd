@@ -1,0 +1,278 @@
+---
+title: "STAT021 Homework 8"
+author: "Yuchao Wang"
+date: "November 16, 2018"
+output: pdf_document
+fontsize: 12pt
+---
+
+
+## Goals
+
+* Interpret and compare models with
+    + Categorical predictors
+    + Interaction terms
+* Interpret and compare models using
+    + Nested $F$ test
+    + Adjusted $R^2$
+
+
+## Question 0 (not really a question) (5%)
+
+* **Data Visualization with ggplot2 (Part 2)** by Wednesday 12/5 11:55 PM.
+
+## Question 1~8
+
+Several undergraduate students collected data on the prices of 50 horses advertised for sale on the Internet. Predictor variables including the *Age* and *Height* of the horse (in hands), as well as its *Sex* were used to predict the *Price* of the horses. The data `HorsePrices.txt` is available at `/home/stat021f18/datasets`.
+
+## Question 1
+
+Run a pooled two-sample $t$ test, an ANOVA $F$ test and a linear regression $t$ test of the slope to study the relationship between *Price* and *Sex*. Compare the three tests in terms of null hypothesis, test statistic and $P$-value.
+
+**Answer**:     
+For pooled two-sample $t$ test, $H_0: \mu_f = \mu_m$, $t=-4.7942$, $p$-value $=1.619*10^{-5}$   
+For ANOVA $F$ test, $H_0: \mu_f = \mu_m$, $F=22.98$, $p$-value $=1.62*10^{-5}$    
+For linear regression $t$ test, $H_0: \beta_m=0$, $t=-4.794$, $p$-value $=1.62*10^{-5}$   
+By comparing the above results we see that pooled two-sample $t$ test and ANOVA $F$ test have the same null hypothesis. Pooled two-sample $t$ test and linear regression $t$ test have the same test statistic $t$, and for the test statistic in ANOVA $F$ test, $F=t^2$. All three tests have the same $p$-value. 
+
+```{r}
+horse <- read.table("/home/stat021f18/datasets/HorsePrices.txt",
+                    sep="\t", header=T)
+#pooled two-sample t test
+t.test(Price ~ Sex, data=horse, var.equal=T)
+
+#ANOVA F test 
+summary(aov(Price ~ Sex, data=horse))
+
+#linear regression t test
+summary(m1 <- lm(Price ~ Sex, data=horse))
+
+```
+
+
+
+## Quesiton 2
+
+Write down the estimated regression line of the regression model you ran in Quesiton 1. Which category of the *Sex* variable is assigned value 1 in the regression model? What do the values of the intercept and the slope mean? How are they related to the average *Price* of female horses and male horses?
+
+**Answer**:
+$\hat{y} = 16505 + 17225x$, where $x=0$ when the horse is female and $x=1$ when the horse is male. The intercept means the average price of female horses and the slope means the difference in average price between female and male horses. The average price for male horses equals to the intercept value plus the slope value. 
+
+
+## Question 3
+
+Provide a scatterplot with a regression line to visualize the relationship between *Price* and *Age*. Run a linear regression model to study this relationship. Write down the estimated regression line. Interpret the $t$ test for the slope and $R^2$ value. Draw an overall conclusion about the relationship.
+
+**Answer**:     
+$\hat{y}=29796.8-415.9x$    
+$t$ test for the slope has $p$-value $=0.38>0.05$ and hence is not significant. $R^2=0.01612$ which means that 1.61% of the variation in *Price* can be explained by this linear relationship with *Age* and hence the model is not strong in its explanatory power. We can therefore reject the alternative hypothesis and say that there is no significant linear relationship between *Price* and *Age*. 
+
+```{r, fig.width=4, fig.height=4, fig.align='center'}
+library(ggplot2)
+#scatterplot of price against age with regression line
+ggplot(data=horse, aes(x=Age, y=Price))+ 
+  geom_point(alpha=0.6)+
+  geom_smooth(method = "lm")
+#SLR
+summary(m2 <- lm(Price ~ Age, data=horse))
+```
+
+
+
+## Quesiton 4
+
+Consider a model for *Price* with both predictors *Sex* and *Age*. State the statistical model using math notations. Fit the model in R. Write down the estimated regression line. Explain the meaning of the values of the slopes. Interpret the individual $t$ tests for the slopes, the $F$ test for the model and the $R^2$ value. Write down the two regression lines when $Sex=f$ and $Sex=m$.
+
+**Answer**:    
+$Y=\beta_0+\beta_1X_1 + \beta_2X_2 + \epsilon, \epsilon \overset{iid}{\sim} N(0, \sigma)$, where $X_1$ denotes *Sex* and $X_2$ denotes *Age*.     
+$\hat{y}=18199.7+17008.6x_1-220x_2$, where $x_1=0$ for female horse and $x_1=1$ for male horse, and $x_2$ is the age of the horse.    
+For any value of *Age*, the difference in average *Price* between male and female horse is 17008.6 units.     
+Given that *Sex* is held constant, average *Price* decreases 220.1 units for every unit increase in *Age*.    
+Since $t$ tests for *Sex* shows a $p$-value$=2.52*10^{-5}<<0.05$, there is a significant difference in average *Price* between female and male horses, holding *Age* constant.    
+The $t$ test for *Age* shows $p$-value$=0.579>0.05$, so given that *Sex* is held constant, there is no significant linear relationship between *Age* and *Price*.     
+The overall $F$ test has $p$-value$=8.695*10^{-5}<<0.05$, so the entire model is significant. And the $R^2=0.3283$ which means 32.83% of the variability in *Price* can be explained by variabilities in *Age* and *Sex* using this model, thus the model is relatively strong.   
+When $Sex=f$, $\hat{y}=18199.7-220x_2$     
+When $Sex=m$, $\hat{y}=18199.7+17008.6-220x_2$   
+
+```{r}
+#linear regression of Price ~ Sex + Age
+summary(m4 <- lm(Price ~ Sex + Age, data=horse))
+```
+
+
+
+## Question 5
+
+Study the relationship between *Price* and *Age* **separately** for the two *Sex* groups: generate a scatterplot of *Price* vs *Age* for the two *Sex* groups separately (Hint: Lecture 17 Slide 5), run two separate regression models, write down the two estimated regression lines, draw a conclusion about each relationship based on the $t$ test for the slope. Do these two models and the model in Question 4 tell you the same story about the relationship between *Price* and *Age*? Why or why not?
+
+**Answer**:     
+When $Sex=f$, $\hat{y}=22877.8-827.6x_1$     
+When $Sex=m$, $\hat{y}=27858.6+874.2x_1$      
+For the group with female horses, $t$ test shows $p$-value$=0.0528$ which roughly equals to the cutoff value 0.05, and therefore there is a roughly significant negative linear relationship between *Price* and *Age*. 
+For the group with male horses, $t$ test shows $p$-value$=0.216>0.05$ and therefore there is no significant linear relationship between *Price* and *Age*.     
+These model in Question 4 and 5 do not tell the same story since in Question 4, *Price* and *Age* shows a negative relationship in the model holding *Sex* constant, regardless of the *Sex*. While models in Question 5 show that for female horses and male horses, the linear relationships between *Price* and *Age* are negative and positive, respectively, though the relationship is not significant for the male horses.  
+```{r, fig.width=4, fig.height=4, fig.align="center"}
+#sex=f, lm for Price ~ Age
+summary(m.f <- lm(Price ~ Age, subset = (Sex == "f"), data=horse))
+#sex=m, lm for Price ~ Age
+summary(m.m <- lm(Price ~ Age, subset = (Sex == "m"), data=horse))
+#scatter plot with regression line 
+ggplot(horse, aes(x=Age, y=Price, color=Sex))+
+ geom_point(size=2.5, alpha=0.6)+
+ geom_smooth(method="lm", se=F, size=1.5)+
+ ggtitle("Price ~ Age separately")
+```
+
+
+
+## Question 6
+
+Consider a model *Price* with both predictors *Sex* and *Age* and their interaction term. State the statistical model using math notations. Fit the model in R. Write down the estimated regression line. Explain the meaning of the slope value of the interaction term. Interpret the $t$ test for the interaction term, the $F$ test for the model and the $R^2$ value. Write down the two regression lines when $Sex=f$ and $Sex=m$.
+
+**Answer**:     
+$Y=\beta_0+\beta_1X_1 + \beta_2X_2 + \beta_3X_1X_2+\epsilon, \epsilon \overset{iid}{\sim} N(0, \sigma)$, where $X_1$ denotes *Sex* and $X_2$ denotes *Age*.     
+$\hat{y}=22877.8+4980.8x_1-827.6x_2+1701.8x_1x_2$, where $x_1=0$ for female horse and $x_1=1$ for male horse, and $x_2$ is the age of the horse.     
+The slope of the interaction term shows the difference of the differences i.e. the difference in slope of *Price* against *Age* between when $Sex=f$ and when $Sex=m$.   
+The $t$ test for the interaction term shows that there is a significant difference in the slope of *Price* against *Age* between  when $Sex=f$ and when $Sex=m$.       
+$F$ test shows that this model with interaction term is significant, and $R^2=0.3895$ shows that around 39% of the variability in *Price* can be explained by this model and hence it is relatively strong.    
+When $Sex=f$, $\hat{y}=22877.8-827.6x_2$     
+When $Sex=m$, $\hat{y}=22877.8+4980.8-827.6x_2+1701.8x_2=27858.6+874.2x_2$ 
+
+
+```{r}
+#lm of Price ~ Sex * Age
+summary(m6 <- lm(Price ~ Sex * Age, data=horse))
+#calculator
+22877.8+4980.8
+-827.6+1701.8
+```
+
+
+
+## Question 7
+
+In each of Question 4, 5 and 6, you obtained two regression lines. Which two questions result in the same regression lines? Which one of the two models, the model without interaction in Question 4 and the model with interaction in Question 6, fits the data better? Is the interaction necessary in the model?
+
+**Answer**:  
+Question 5 and 6 result in the same regression lines for when $Sex=f$ and $Sex=m$. The model with interaction term in Question 6 fits the data better since in the scatterplot in Question 5, one can see that the general trend for $Sex=f$ is negative while that for $Sex=m$ is positive, which the model without interaction term cannot account for (they are parallel in this model). Therefore, the interaction is necessary in the model. 
+
+
+## Question 8
+
+Add *Height* as a third predictor. Consider the following models:
+
+* Model A: *Price* ~ *Sex* + *Age* + *Height*
+* Model B: *Price* ~ *Sex* * *Age* + *Height*
+* Model C: *Price* ~ *Sex* + *Age* * *Height*
+* Model D: *Price* ~ *Sex* * *Height* + *Age*
+
+Suggest the best model using nested $F$ test and adjusted $R^2$.
+
+**Answer**:   
+First of all, the $F$ test for all four models show $p$-values less than 0.05 and hence all four models are significant. Based on adjusted $R^2$, we see that Model B has the highest value (0.4353) followed by Model D (0.4138), which means that they have higher explanatory powers. When we conduct a nested $F$ test for Model B and D, we see that Model B has a smaller residual sum square than Model D has, and therefore confirms that Model B is stronger. We then conduct another nested $F$ test between Model A and Model B, which shows $p$-value$=0.04653<0.5$ and hence Model B with the interaction term between *Sex* and *Age* is significantly different from Model A. Overall we can conclude that Model B is the best model among these four.  
+
+```{r}
+#Model A
+summary(ma<- lm(Price ~ Sex + Age + Height, data=horse))
+#Model B
+summary(mb<- lm(Price ~ Sex * Age + Height, data=horse))
+#Model C
+summary(mc<- lm(Price ~ Sex + Age * Height, data=horse))
+#Model D
+summary(md<- lm(Price ~ Sex * Height + Age, data=horse))
+
+#Nested F test for Model B & D
+anova(mb, md) 
+
+#Nested F test for Model A & B
+anova(ma, mb) 
+```
+
+
+
+## Question 9
+
+A person's systolic blood pressure can be a signal of serious issues in their cardiovascular system. The dataset `BP2.RData` at `/home/stat021f18/datasets` includes the systolic blood pressure *BloodPressure*, the size and the smoking status of 500 randomly chosen adults. *Size* is a categorical variable that takes on the values *Normal*, *Overweight*, and *Obese*. *Smoke* is a binary variable with values *Yes* and *No*.
+
+The values of the *Size* variable, *Normal*, *Overweight*, and *Obese*, have an ordinal trend as $Obese > Overweight > Normal$. Sometimes, people transform this kind of categorical variable to a quantitative variable with values 0, 1 and 2. This new variable named as *SizeNum* is also included in the data set.
+
+Consider the following two models
+
+* Model A: *BloodPressure* ~ *Smoke* + *Size*
+* Model B: *BloodPressure* ~ *Smoke* + *SizeNum*
+
+1. Run the two models and write down the estimated regression lines.
+
+**Answer**:    
+Model A: $\hat{y}=131.897+9.181x_s+8.259x_{ow}+15.614x_o$, where  $x_s=0$ when *Smoke=No*, $x_s=1$ when *Smoke=Yes*, $x_{ow}=1$ when *Size=Overweight*, and $x_o=1$ when *Size=Obese*.      
+Model B: $\hat{y}=132.013+9.153x_s+7.805x_{sn}$, where  $x_s=0$ when *Smoke=No*,  $x_s=1$ when *Smoke=Yes*, $x_{sn}=0$ when *Size=Normal* $x_{sn}=1$ when *Size=Overweight*, and $x_{sn}=2$ when *Size=Obese*.      
+
+```{r}
+load("/home/stat021f18/datasets/BP2.RData")
+#Model A
+summary(mA<- lm(BloodPressure ~ Smoke + Size, data = BP2))
+#Model B 
+summary(mB<- lm(BloodPressure ~ Smoke + SizeNum, data = BP2)) 
+```
+
+
+
+
+2. Interpret the slopes for *Size* in Model A and for *SizeNum* in Model B. Fill out the table below using the model.
+
+**Answer**:
+
+-----------------------------------------------------------
+Given that *Smoke* is held constant      Model A   Model B
+--------------------------------------- --------- ---------
+Difference in blood pressure between     8.259     7.805
+the *Overweight* and the *Normal*
+group
+
+Difference in blood pressure between     15.614     15.610
+the *Obese* and the *Normal*
+group
+-----------------------------------------------------------
+
+
+
+
+3. Which model is simpler in terms of number of parameters? Run a nested $F$ test to compare the two models. Which one is better based nested $F$ test? How about adjusted $R^2$? Use the table in part 2 to explain why one model is better than the other.
+
+**Answer**:    
+Model B is simpler in terms of number of parameters (only two parameters). Nested $F$ test shows that the two models are not significantly different, and we see in part 1 that Model B has a slightly higher adjusted $R^2$ value. In part 2, we see that the differences between *Normal* and *Overweight* and between *Normal* and *Obese* when estimated separately in Model A, are very close to that of Model B, which assumes that the difference between *Normal* and *Overweight* is about half of the difference between *Normal* and *Obese*.  Therefore Model B is better than Model A. 
+
+```{r}
+#Nested F test for Model A & B
+anova(mA, mB) 
+```
+
+
+
+
+4. Add an interaction term of the two predictors in each of Model A and B. Is the interaction necessary in each model? Which one of the four models is the best?
+
+**Answer**:    
+Between Model A and C, we see that by adding an interaction term, the adjusted $R^2$ value of Model C is lower than that of Model A and hence Model A is better than Model C and interaction term is not necessary. Between Model B and D, we see that by adding an interaction term, the adjusted $R^2$ value of Model D (0.09371) is slightly higher than that of Model B (0.09369). By conducting a nested $F$ test to compare Model B and D, we see that they are not significantly different and since the increases in both $R^2$ value and adjusted $R^2$ value are very small, we can choose the simpler Model B to be better than Model D, and the interaction term is not necessary. And since Model B is better than Model A from part 3, Model B is the best model among the four. 
+
+```{r}
+#Model C
+summary(mA<- lm(BloodPressure ~ Smoke * Size, data = BP2))
+#Model D 
+summary(mD<- lm(BloodPressure ~ Smoke * SizeNum, data = BP2)) 
+
+#Nested F test for B and D
+anova(mB, mD)
+```
+
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_8.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

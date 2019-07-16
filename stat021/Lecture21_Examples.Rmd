@@ -1,0 +1,234 @@
+---
+title: "STAT021 Lecture 21 MLR Review Examples"
+fontsize: 12pt
+date: "November 27, 2018"
+output:
+  html_document: default
+---
+
+## The Happy Planet Index example
+
+```{r, fig.height=6, fig.width=7.5}
+# Input data and exploratory data analysis
+load("/home/stat021f18/datasets/HappyPlanet.RData")
+head(HappyPlanet)
+library(psych)
+describe(HappyPlanet)[,2:4]
+table(HappyPlanet$HDI)
+# If there aren't too many missing observations, we can remove them
+# at the beginning of the analysis
+HappyPlanet <- HappyPlanet[complete.cases(HappyPlanet), ]
+describe(HappyPlanet)[,2:4]
+library(GGally)
+ggpairs(HappyPlanet[,c("GDPpc","LifeExp","LifeSat","HDI","Happiness")])
+library(car)
+vif(lm(Happiness ~ GDPpc + LifeExp + LifeSat + HDI, data=HappyPlanet))
+# When categorical predictor is in the model, use the "GVIF^(1/(2*Df))"
+# values and compare them to sqrt(5) instead of 5.
+```
+
+Potential predictors:
+
+* *GDPpc* or *log(GDPpc)*, quadratic terms
+* *LifeExp* or *LE2* (categorizing *LifeExp*), quadratic terms for *LifeExp*
+* *LifeSat*, quadratic terms
+* *HDI*, *HDI* as quantitative
+* Two-way interactions
+
+```{r}
+# Prepare the potential predictors
+logGDPpc <- log(HappyPlanet$GDPpc)
+summary(HappyPlanet$LifeExp)
+LE2 <- cut(HappyPlanet$LifeExp, breaks=c(30, 70, 90), 
+           labels=c("Low","High"))
+HDInum <- as.numeric(HappyPlanet$HDI) - 1
+HappyPlanet <- data.frame(HappyPlanet, logGDPpc, LE2, HDInum)
+```
+
+```{r}
+# Zero model and full models
+zeroModel <- lm(Happiness ~ 1, data=HappyPlanet)
+fullModel1 <- lm(Happiness ~ (GDPpc + LifeExp + LifeSat + HDI)^2
+                 + I(GDPpc^2) + I(LifeExp^2) + I(LifeSat^2), data=HappyPlanet)
+fullModel2 <- lm(Happiness ~ (logGDPpc + LifeExp + LifeSat + HDI)^2
+                 + I(logGDPpc^2) + I(LifeExp^2) + I(LifeSat^2), data=HappyPlanet)
+fullModel3 <- lm(Happiness ~ (logGDPpc + LE2 + LifeSat + HDI)^2
+                 + I(logGDPpc^2) + I(LifeSat^2), data=HappyPlanet)
+fullModel4 <- lm(Happiness ~ (logGDPpc + LifeExp + LifeSat + HDInum)^2
+                 + I(logGDPpc^2) + I(LifeExp^2) + I(LifeSat^2), data=HappyPlanet)
+```
+
+```{r}
+fw1 <- step(zeroModel, scope=list(upper=fullModel1), direction="forward", trace=0)
+bw1 <- step(fullModel1, scope=list(lower=zeroModel), direction="backward", trace=0)
+st1 <- step(zeroModel, scope=list(upper=fullModel1), direction="both", trace=0)
+summary(fw1)
+summary(bw1)
+summary(st1)
+c(summary(fw1)$adj, summary(bw1)$adj, summary(st1)$adj)
+anova(fw1, bw1, st1)
+anova(fw1, bw1, st1, test="Cp")
+AIC(fw1, bw1, st1)
+```
+
+Model `bw1` and `st1` are the same, while `fw1` has one additional linear term of *LifeExp*. Since all three models have the quadratic term of *LifeExp*, we choose `fw1` as the best model among the three.
+
+```{r, fig.width=7, fig.height=3}
+# Checking assumptions
+# Here I write a function to generate the plots and test
+library(ggplot2)
+library(gridExtra) # You may need to install the gridExtra pacakage first
+library(lmtest)
+CheckAssumptions <- function(model){
+  Assess <- data.frame(Residuals=model$residuals, 
+                     FittedValues=model$fitted.values)
+  # Residuals vs. Fitted Values
+  p1 <- ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+          geom_point(color="skyblue3", size=2, alpha=0.8)+
+          geom_hline(yintercept=0, size=1.2, colour="grey50")+
+          ggtitle("Residuals vs. Fitted Values")
+  # Normal Q-Q plot
+  p2 <- ggplot(data=Assess, aes(sample = scale(Residuals)))+
+          stat_qq(size=3, color="skyblue3", alpha=0.7)+
+          geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+
+          ggtitle("Normal Q-Q Plot")
+  # Histogram of residuals
+  p3 <- ggplot(Assess, aes(Residuals))+
+          geom_histogram(bins=20, fill="skyblue3", alpha=0.7)+
+          ggtitle("Histogram of Residuals")
+  grid.arrange(p1, p2, p3, nrow = 1)
+  bptest(model)
+}
+CheckAssumptions(fw1)
+```
+
+```{r}
+# My function for unusual points
+library(MASS)
+UnusualPoints <- function(model, data){
+  n <- nrow(data) # sample size
+  Leverage <- hatvalues(model) # leverage values
+  StdRes <- stdres(model) # standardized residuals
+  CooksD <- cooks.distance(model) # Cook's D
+  unusual <- data.frame(HappyPlanet, Leverage, StdRes, CooksD)
+  cd <- function(h, type){sqrt((1-h)/h)*type} # function for cook's D cutoffs
+  K <- length(model$coefficients) - 1 # number of predictors
+  ggplot(unusual, aes(x=Leverage, y=StdRes, label=Country))+
+    geom_point(color="skyblue3", size=2.5, alpha=0.7)+
+    geom_vline(xintercept = c(2*(K+1)/n, 3*(K+1)/n), color="red", linetype=2)+
+    geom_hline(yintercept = c(-3,-2,2,3), color="orange", linetype=2)+
+    stat_function(fun=cd, args=list(type=sqrt(K+1)), color="blue", linetype=2)+
+    stat_function(fun=cd, args=list(type=-sqrt(K+1)), color="blue", linetype=2)+
+    stat_function(fun=cd, args=list(type=sqrt(0.5*(K+1))), color="blue", linetype=2)+
+    stat_function(fun=cd, args=list(type=-sqrt(0.5*(K+1))), color="blue", linetype=2)+
+    ggtitle("Diagnostic Plot")
+}
+
+UnusualPoints(model=fw1, data=HappyPlanet)
+```
+
+```{r}
+# Model with logGDPpc instead of GDPpc
+fw2 <- step(zeroModel, scope=list(upper=fullModel2), direction="forward", trace=0)
+bw2 <- step(fullModel2, scope=list(lower=zeroModel), direction="backward", trace=0)
+st2 <- step(zeroModel, scope=list(upper=fullModel2), direction="both", trace=0)
+summary(fw2)
+summary(bw2)
+summary(st2)
+c(summary(fw2)$adj, summary(bw2)$adj, summary(st2)$adj)
+anova(fw2, bw2, st2)
+anova(fw2, bw2, st2, test="Cp")
+AIC(fw2, bw2, st2)
+```
+
+Model `bw2` and `st2` are the same and seem to be better than `fw2`. But note it does not have the linear term of *LifeExp*. Let's add it in and compare `st2new` to `fw1` to see whether we should use *GDPpc* or *logGDPpc*.
+
+```{r}
+st2new <- lm(Happiness ~ LifeSat + HDI * logGDPpc + I(logGDPpc^2)
+             + LifeExp + I(LifeExp^2), data=HappyPlanet)
+c(summary(fw1)$adj, summary(st2new)$adj)
+anova(fw1, st2new)
+anova(fw1, st2new, test="Cp")
+AIC(fw1, st2new)
+```
+
+```{r, fig.width=7, fig.height=3}
+CheckAssumptions(st2new)
+```
+
+```{r}
+UnusualPoints(model=st2new, data=HappyPlanet)
+```
+
+Using *logGDPpc* is probably better. But it's totally reasonable to choose `fw1` for it is simpler and not significantly different from `st2new` and has smaller Cp.
+
+```{r}
+# Model with LE2 instead of LifeExp
+fw3 <- step(zeroModel, scope=list(upper=fullModel3), direction="forward", trace=0)
+bw3 <- step(fullModel3, scope=list(lower=zeroModel), direction="backward", trace=0)
+st3 <- step(zeroModel, scope=list(upper=fullModel3), direction="both", trace=0)
+summary(fw3)
+summary(bw3)
+summary(st3)
+c(summary(fw3)$adj, summary(bw3)$adj, summary(st3)$adj)
+anova(fw3, bw3, st3)
+anova(fw3, bw3, st3, test="Cp")
+AIC(fw3, bw3, st3)
+```
+
+These models have much smaller $R^2$ and adjusted $R^2$ than the previous models. We should model *LifeExp* as a quantitative rather than a binary variable.
+
+```{r}
+# Model with HDInum instead of HDI
+fw4 <- step(zeroModel, scope=list(upper=fullModel4), direction="forward", trace=0)
+bw4 <- step(fullModel4, scope=list(lower=zeroModel), direction="backward", trace=0)
+st4 <- step(zeroModel, scope=list(upper=fullModel4), direction="both", trace=0)
+summary(fw4)
+summary(bw4)
+summary(st4)
+c(summary(fw4)$adj, summary(bw4)$adj, summary(st4)$adj)
+anova(fw4, bw4, st4)
+anova(fw4, bw4, st4, test="Cp")
+AIC(fw4, bw4, st4)
+```
+
+Model `bw4` and `st4` are the same and seem to be better than `fw4`. But note it does not have the linear term of *LifeExp*. Let's add it in and compare `st4new` to `fw1` and `st2new`.
+
+
+```{r}
+st4new <- lm(Happiness ~ LifeSat + LifeExp + logGDPpc * HDInum
+             + I(LifeExp^2) + I(LifeSat^2), data=HappyPlanet)
+c(summary(st1)$adj, summary(st2new)$adj, summary(st4new)$adj)
+anova(st1, st2new, st4new)
+anova(st1, st2new, st4new, test="Cp")
+AIC(st1, st2new, st4new)
+```
+
+It turns out `st4new` is the best, where we model *HDI* quantitatively.
+
+Final model analysis
+
+```{r}
+describe(HappyPlanet[,c("logGDPpc","LifeExp","LifeSat","HDInum","Happiness")])[,2:4]
+ggpairs(HappyPlanet[,c("logGDPpc","LifeExp","LifeSat","HDInum","Happiness")])
+vif(lm(Happiness ~ logGDPpc + LifeExp + LifeSat + HDInum, data=HappyPlanet))
+```
+
+```{r}
+summary(st4new)
+```
+
+```{r, fig.width=7, fig.height=3}
+CheckAssumptions(st4new)
+```
+
+```{r}
+UnusualPoints(model=st4new, data=HappyPlanet)
+```
+
+```{r}
+predict(st4new, list(LifeExp=75, LifeSat=6.9, logGDPpc=log(9223), HDInum=2),
+        interval = "confidence")
+predict(st4new, list(LifeExp=75, LifeSat=6.9, logGDPpc=log(9223), HDInum=2),
+        interval = "prediction")
+```

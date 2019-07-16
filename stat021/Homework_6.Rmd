@@ -1,0 +1,321 @@
+---
+title: "STAT021 Homework 6"
+author: "Yuchao Wang"
+date: "October 22, 2018"
+output: pdf_document
+fontsize: 12pt
+always_allow_html: yes
+---
+
+
+## Goals
+
+* Predict mean response and individual response.
+* Make inferences about predictions.
+* Look for outliers and influential points using
+    + Leverage;
+    + Standardized and studentized residuals;
+    + Cook's Distance.
+* Generate diagnostic plot for unusual points.
+
+## Grading
+
+* Codes exceed the code box in the .pdf file: 2 points off for every occurrence.
+* Math (inline or display) mode is required whenever you want to include math notations and equations in your answer.
+
+## Question 0 (not really a question) (5%)
+
+* DataCamp **Data Visualization with ggplot2 (Part 1)** by 11/7 11:55 PM.
+
+
+## Question 1
+
+Use the `Cereal.xls` data in Homework 5 Question 4 to study the relationship between *Calories* and *Sugar*. Answer the following questions.
+
+1. Run a SLR model of *Calories* on *Sugar*. Generate a scatterplot with regression line to show the relationship. What does the $t$ test and $R^2$ tell you about hte relationship?
+
+**Answer**:  
+
+The $t$-test has $p$-value$=0.0013<0.05$, suggesting that the simple linear relationship between *Calories* and *Sugar* is statistically significant. The $R^2$ shows that the explanatory strength of this model is relatively strong since the variation in *Sugar* can account for about 27% of the variability of *Calories*. 
+
+```{r, fig.width=5, fig.height=4}
+library(readxl)
+Cereal <- read_excel("/home/stat021f18/datasets/Cereal.xls")
+#SLR of Calories on Sugar
+summary(calsugSLR <- lm(Calories ~ Sugar, data=Cereal))
+
+#Scatter plot with regression line
+library(ggplot2)
+ggplot(data=Cereal, aes(x=Sugar, y=Calories))+ 
+  geom_point(color="skyblue3", size=2, alpha=0.8)+ 
+  geom_smooth(method='lm', size=1.2, se=F)+ 
+  ggtitle("Cereal Calories vs Sugar")
+```
+
+
+
+2. Write down the estimated regression line. Predict the mean number of *Calories* and individual number of *Calories* for $Sugar=12$ grams (do the calculation without using the `predict() function`). Find the brands of cereals that have 12 grams of sugar in the data set and calculate the residual values for them.
+
+**Answer**:  
+$$
+\hat y=2.48x+87.43
+$$
+
+
+The predicted mean number and individual number of *Calories* for $Sugar=12$ grams are both 117.19. The residual values for the two brands with $Sugar=12$ grams based on previous prediction are $-7.19$ and $2.81$ (for Capt. Crunch and Trix respectively). 
+
+```{r}
+#predict value for sugar=12
+2.48*12+87.43
+str(Cereal)
+Cereal[Cereal$Sugar==12,]
+#calculate residual values 
+110-117.19
+120-117.19
+```
+
+
+
+3. Use the `predict()` function in R to verify your prediction in part 2. Report the 95% confidence interval for the mean response and 95% prediction interval for the individual response. Describe the meaning of these two intervals. (Note, sometimes the `predict()` function returns the output with a warning message "predictions on current data refer to _future_ responses", which is normal and no specific action is needed.)
+
+**Answer**:       
+      
+The 95% confidence interval for mean response is $[106.0498,128.3451]$ and the 95% prediction interval for individual response is $[76.4791, 157.9158]$. The confidence interval for mean response has only uncertainty from $b_0$ and $b_1$, which are estimated from sample data, while the prediction interval for individual response has uncertainty not only from $b_0$ and $b_1$, but also from $e$ which is the random error term in individual response. Therefore the prediction interval is greater than the confidence interval for mean response, when both are at 95% confidence level.   
+
+```{r, warning=FALSE}
+predict(calsugSLR, list(Sugar=12),interval = "confidence")
+predict(calsugSLR, list(Sugar=12),interval = "prediction")
+```
+
+
+
+4. What are observed numbers of *Calories* for the cereals you found in part 2 that have 12 grams of sugar? Use the interval you found in part 3 and the observed *Calories* values to discuss whether the prediction works well or not (which interval of the two intervals would you choose? why?).
+
+**Answer**:  
+
+The observed values are $110$ and $120$. I would choose the prediction intervals for individual values since it takes into account the random variation in individual samples (the error term) and thus more fairly represents the predictive ability of the model. Both values are within the interval $[76.4791, 157.9158]$ so the prediction works well. 
+
+
+5. Add 95% confidence interval and prediction interval lines to the scatterplot with regression line you have in part 1. Comment.
+
+**Answer**:  
+
+```{r, fig.width=5, fig.height=4,warning=FALSE}
+pi <- predict(calsugSLR, interval="prediction") 
+Cereal2 <- data.frame(Cereal, pi) 
+ggplot(data=Cereal2, aes(x=Sugar, y=Calories))+
+  geom_point(color="skyblue3", size=2, alpha=0.8)+ 
+  geom_smooth(method='lm', size=1.2, se=TRUE, color="dodgerblue3")+
+  geom_line(aes(y=lwr), color="indianred1", linetype=2,size=1.1)+ 
+  geom_line(aes(y=upr), color="indianred1", linetype=2,size=1.1)
+```
+
+
+
+6. Find unusal points (report the brand of the cereals) using leverage, standardized residuals, studentized residuals and Cook's distance. Generate a diagnostic plot with all the three criteria. Comment. (Note: to show the plot in a .pdf file, use `ggplot()`; you may also play with the `ggplotly()` function from the `plotly` package to generate an interactive plot, which can be *interactive* only in the .Rmd file or a knitted .html file but not a .pdf file.)
+
+**Answer**:  
+
+Based on leverage, Honey Smacks is an unusual point. Based on both standardized residual and studentized residual, All Bran Xtra Fiber, Kenmei Rice Bran, and Mueslix Crispy Blend are unusual points. And based on Cook's distance, there is no unusual point. From the diagnostic plot, we can also see that none of the unusual points are especially unusual (with leverage $>6/n$ or standardized and studentized residual $>3$ or $<-3$). And since there is no point with sigfinicant Cook's distance, we can conclude that the simple linear model fits the sample data well. 
+
+```{r, fig.width=5, fig.height=5, warning=FALSE}
+n <- nrow(Cereal)
+Cereal.model <- lm(Calories ~ Sugar, data=Cereal)
+library(MASS)
+# Calculate the statistics
+Leverage <- hatvalues(Cereal.model) # leverage values 
+StdRes <- stdres(Cereal.model) # standardized residuals 
+StudRes <- studres(Cereal.model) # studentized residuals 
+CooksD <- cooks.distance(Cereal.model) # Cook's distance
+# Put all data into one dataframe
+Cereal3 <- data.frame(Cereal, Leverage, StdRes, StudRes, CooksD)
+
+# Function for Cook's D cutoffs
+cd <- function(h, type){ 
+  sqrt((1-h)/h)*type
+}
+# Plot the ggplot
+diag.plot <- ggplot(Cereal3, aes(x=Leverage, y=StdRes, label=Cereal))+
+  geom_point(color="aquamarine3", size=2.5)+
+  geom_vline(xintercept = c(4/n, 6/n), color="red", linetype=2)+ 
+  geom_hline(yintercept = c(-3,-2,2,3), color="orange", linetype=2)+
+  stat_function(fun=cd, args=list(type=sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=1), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-1), color="blue", linetype=2)+
+  ggtitle("Diagnostic Plot")
+# Print the ggplot
+diag.plot
+# Print the interaction ggplot using ggplotly() 
+library(plotly)
+ggplotly(diag.plot)
+
+#Find unusual points 
+subset(Cereal3, Leverage > 4/n)
+subset(Cereal3, abs(StdRes) > 2)
+subset(Cereal3, abs(StudRes) > 2)
+subset(Cereal3, CooksD > 0.5)
+```
+
+
+
+## Question 2
+
+In this question, we investigate the relationship between number of doctors per 100,000 people (*RateMDs*, response variable) and number of doctors per city (*NumMDs*, explanatory variable) for 82 US cities using simple linear regression model. The data were collected by the US Census Bureau. Consider the two models below,
+
+**Model A**: *RateMDs* ~ *NumMDs*  
+**Model B**: *log(RateMDs)* ~ *log(NumMDs)*  
+
+1. Import the data `MD.RData` at `/home/stat021f18/datasets` into R using the `load()` function. Run Model A and B. Write down the estimated regression lines and briefly summarize the two models based on $F$ test and $R^2$ value.
+
+**Answer**:   
+
+Model B significantly outperforms Model A since Model B has a greater $R^2$ value ($0.4107>0.1866$, hence much stronger explanatory power of explanatory variable on response variable) and smaller $p$-value from $F$ test ($8.898*10^{-11} < 5.065*10^{-5} < 0.05$, hence the model B is more statistically significant), though both models are valid (significant). 
+
+```{r}
+load("/home/stat021f18/datasets/MD.RData")
+summary(MDSLR1 <-lm(RateMDs ~ NumMDs, data=MD)) 
+summary(MDSLR2 <-lm(log(RateMDs) ~ log(NumMDs), data=MD))
+```
+
+
+
+2. Use Model A and B to predict *RateMDs* for $NumMDs=500$ (do the calculations without using the `predict() function`). Do you get the same predicted *RateMDs* value? Now use the `predict()` function to obtain the 95% confidence intervals and prediction intervals based on the two models. Compare the intervals from Model A to those from Model B in terms of the width of the intervals. Which model predicts better? Why?
+
+**Answer**: With Model A, RateMDs$=252.5$. With Model B, RateMDs $= 230.0$ and hence they are not the same. For Model A, 95% confidence interval is $[229.3118, 275.6942]$ and prediction interval is $[69.56596, 435.44]$. For Model B, 95% confidence interval is $[214.4593, 246.7062]$ and prediction interval is $[130.8458, 404.3572]$. Model B predicts better because it gives a narrower range and thus more accurate prediction. 
+
+```{r}
+#Model A
+2.416e+02+500*2.179e-02
+
+#Model B
+exp(log(500)*0.21010+4.13245)
+
+#Model A
+predict(MDSLR1, list(NumMDs=500),interval = "confidence")
+predict(MDSLR1, list(NumMDs=500),interval = "prediction")
+#Model B
+exp(predict(MDSLR2, list(NumMDs=500),interval = "confidence"))
+exp(predict(MDSLR2, list(NumMDs=500),interval = "prediction"))
+```
+
+
+
+3. Use Model B to predict *RateMDs* for $NumMDs=5000$ with the 95% confidence interval and prediction interval. Compare these two intervals to those in part 2 that are also based on Model B. Why this set of the intervals are much wider than the previous set?
+
+**Answer**:  
+
+For Model B when $NumMDs=5000$, 95% confidence interval is $[332.8673, 418.2737]$ and prediction interval is $[210.7422, 660.6631]$. The intervals are wider because the response variable in the simple linear relationship is the logarithmically transformed *RateMDs*. While the log(RateMDs) will have a similar interval for both $NumMDs=500$ and $NumMDs=5000$, the *RateMDs* value will have a wider range for the latter because it is exponentiated. 
+
+```{r}
+#Model B
+exp(predict(MDSLR2, list(NumMDs=5000),interval = "confidence"))
+exp(predict(MDSLR2, list(NumMDs=5000),interval = "prediction"))
+```
+
+
+
+4. Generate a scatterplot of *RateMDs* ~ *NumMDs* with a linear regression line based on Model A. Add 95% confidence interval lines and prediction interval lines to the plot. Generate aother scatterplot of *RateMDs* ~ *NumMDs* with a fitted line based on Model B but transformed back to the original scale of *RateMDs*. Add 95% confidence interval lines and prediction interval lines to the plot. Compare the two plots. Discuss how transformation makes the model fitting better. (Hint: Lecture 11 Slide 17~20)
+
+**Answer**:   
+
+Model B captures the pattern of the data better since it shows the curved pattern when NumMDs is relatively low. Model B is also more realistic since when NumMDs is zero (or close to zero), people should not have a high RateMDs (bad relationship/low satisfaction since needs are not met). 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center', warning=F}
+MDA <- data.frame(MD,ci=predict(MDSLR1, interval="confidence"),
+                  pi=predict(MDSLR1, interval="prediction"))
+ggplot(data=MDA, aes(x=NumMDs, y=RateMDs))+ 
+  geom_point(color="skyblue3", size=2, alpha=0.7)+ 
+  geom_line(aes(y=ci.fit), color="dodgerblue3",size=1.1)+ 
+  geom_line(aes(y=ci.lwr), color="orange", linetype=2,size=1.1)+ 
+  geom_line(aes(y=ci.upr), color="orange", linetype=2,size=1.1)+ 
+  geom_line(aes(y=pi.lwr), color="indianred1", linetype=2,size=1.1)+ 
+  geom_line(aes(y=pi.upr), color="indianred1", linetype=2,size=1.1)+ 
+  ggtitle("Model A")
+
+MDB <- data.frame(MD,eci=exp(predict(MDSLR2, interval="confidence")), 
+                  epi=exp(predict(MDSLR2, interval="prediction")))
+
+ggplot(data=MDB, aes(x=NumMDs, y=RateMDs))+ 
+  geom_point(color="skyblue3", size=2, alpha=0.7)+ 
+  geom_line(aes(y=eci.fit), color="dodgerblue3",size=1.1)+ 
+  geom_line(aes(y=eci.lwr), color="orange", linetype=2,size=1.1)+ 
+  geom_line(aes(y=eci.upr), color="orange", linetype=2,size=1.1)+ 
+  geom_line(aes(y=epi.lwr), color="indianred1", linetype=2,size=1.1)+ 
+  geom_line(aes(y=epi.upr), color="indianred1", linetype=2,size=1.1)+ 
+  ggtitle("Model B")
+```
+
+
+
+5. Generate diagnostic plots with all the three criteria based on Model A and B, respectively. Compare the two plots.
+
+**Answer**:   
+
+The diagnostic plot shows that Model B is better than Model A in capturing the sample data since Model B has no especially unusual point (while Model A has 4 points with especially high leverage) and also fewer moderately unusual points in terms of both standardized residuals and leverage. Both models has no unusual points in terms of Cook's distance, which is good. 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+#Model A
+n <- nrow(MD)
+
+# Calculate the statistics
+Leverage <- hatvalues(MDSLR1) # leverage values 
+StdRes <- stdres(MDSLR1) # standardized residuals 
+StudRes <- studres(MDSLR1) # studentized residuals 
+CooksD <- cooks.distance(MDSLR1) # Cook's distance
+# Put all data into one dataframe
+MDAplot <- data.frame(MD, Leverage, StdRes, StudRes, CooksD)
+
+# Function for Cook's D cutoffs
+cd <- function(h, type){ 
+  sqrt((1-h)/h)*type
+}
+# Plot the ggplot
+diag.plot <- ggplot(MDAplot, aes(x=Leverage, y=StdRes, label=City))+
+  geom_point(color="aquamarine3", size=2.5)+
+  geom_vline(xintercept = c(4/n, 6/n), color="red", linetype=2)+ 
+  geom_hline(yintercept = c(-3,-2,2,3), color="orange", linetype=2)+
+  stat_function(fun=cd, args=list(type=sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=1), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-1), color="blue", linetype=2)+
+  ggtitle("Diagnostic Plot for Model A")
+diag.plot
+
+
+#Model B
+# Calculate the statistics
+Leverage <- hatvalues(MDSLR2) # leverage values 
+StdRes <- stdres(MDSLR2) # standardized residuals 
+StudRes <- studres(MDSLR2) # studentized residuals 
+CooksD <- cooks.distance(MDSLR2) # Cook's distance
+# Put all data into one dataframe
+MDBplot <- data.frame(MD, Leverage, StdRes, StudRes, CooksD)
+
+# Function for Cook's D cutoffs
+cd <- function(h, type){ 
+  sqrt((1-h)/h)*type
+}
+# Plot the ggplot
+diag.plot2 <- ggplot(MDBplot, aes(x=Leverage, y=StdRes, label=City))+
+  geom_point(color="aquamarine3", size=2.5)+
+  geom_vline(xintercept = c(4/n, 6/n), color="red", linetype=2)+ 
+  geom_hline(yintercept = c(-3,-2,2,3), color="orange", linetype=2)+
+  stat_function(fun=cd, args=list(type=sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-sqrt(2)), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=1), color="blue", linetype=2)+
+  stat_function(fun=cd, args=list(type=-1), color="blue", linetype=2)+
+  ggtitle("Diagnostic Plot for Model B")
+diag.plot2
+```
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_6.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

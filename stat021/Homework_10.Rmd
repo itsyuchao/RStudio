@@ -1,0 +1,239 @@
+---
+title: "STAT021 Homework 10"
+author: "Yuchao Wang"
+date: "December 12, 2018"
+output: pdf_document
+fontsize: 12pt
+---
+
+
+## Goals
+
+* Understand, fit and use logsitic regression model.
+* Calculate and understand
+    + Empirical and estimated probability, odds, log-odds and odds ratio
+* $z$ (Wald) test for individual slopes; confidence intervals for intercept and slopes
+* Likelihood ratio test (LRT) for the model
+* Predictive accuracy
+    + Sensitivity and specificity, ROC curve and AUC
+
+## Question 1 Probability to odds
+
+1. If the probability of an event occurring is 0.6, what are the odds?
+2. If the probability of an event occurring is 0.92, what are the odds?
+3. If the probability of an event occurring is 0.17, what are the odds?
+
+**Answer**:
+
+1. $\frac{0.6}{0.4}=1.5$
+2. $\frac{0.92}{0.08}=11.5$
+3. $\frac{0.17}{0.83}=0.205$
+
+
+## Question 2 Odds to probability
+
+1. If the odds of an event occurring is 3:1, what is the probability?
+2. If the odds of an event occurring is 8:1, what is the probability?
+3. If the odds of an event occurring is 1:7, what is the probability?
+
+**Answer**:
+
+1. $\frac{3}{3+1}=0.75$
+2. $\frac{8}{1+8}=0.89$
+3. $\frac{1}{1+7}=0.125$
+
+
+## Question 3 Log-odds to probability
+
+1. If the log-odds of an event occurring is 0.5, what is the probability?
+2. If the log-odds of an event occurring is -2, what is the probability?
+3. If the log-odds of an event occurring is 15, what is the probability?
+
+**Answer**:
+
+1. $\pi = \frac{\frac{\pi}{1-\pi}}{1+\frac{\pi}{1-\pi}} = \frac{e^{0.5}}{1+e^{0.5}} = 0.622$
+2. $\pi = \frac{\frac{\pi}{1-\pi}}{1+\frac{\pi}{1-\pi}} = \frac{e^{-2}}{1+e^{-2}} = 0.119$
+3. $\pi = \frac{\frac{\pi}{1-\pi}}{1+\frac{\pi}{1-\pi}} = \frac{e^{15}}{1+e^{15}} = 0.9999997$
+
+
+## Question 4
+
+In a study of 31 patients with esophageal cancer, it was found that in 18 of the patients the cancer had metastasized to the lymph nodes. Thus, an overall estimate of the probability of metastasis is $18/31 = 0.58$. A predictor variable measured on each patient is *Size* of the tumor (in cm). A fitted logistic regression model has $$\log\frac{\hat\pi}{1-\hat\pi} = -2 + 0.52\times Size$$
+
+1. Use this model to estimate the odds of metastasis for a patient with tumor size 4 cm.
+2. Use the model to predict the probability of metastasis for a patient with tumor size 4 cm.
+3. How much do the estimated odds change if the tumor size changes from 4 cm to 5 cm?
+4. How much does the estimated probability of metastasis change if the tumor size changes from 4 cm to 5 cm? from 4 cm to 10 cm?
+5. How large does a tumor need to be for the estimated probability of metastasis to be at least 0.9?
+
+**Answer**:
+```{r, include=F}
+exp(-2+0.52*8.07)/(1+exp(-2+0.52*8.07))
+exp(-2+0.52*5)-exp(-2+0.52*4) 
+
+
+exp(-2+0.52*10)/(1+exp(-2+0.52*10))-exp(-2+0.52*4)/(1+exp(-2+0.52*4))
+(log(9)+2)/0.52
+```
+
+1. odds of metastasis for patient with tumor size 4cm = $e^{-2+0.52*4} = 1.08$
+
+2. probability of metastasis for patient with tumor size 4cm = $\frac{odds_4}{1+odds_4} = 0.520$
+
+3. odds change = $e^{-2+0.52*5} - e^{-2+0.52*4}  = 0.739$ i.e. the odds increase by 0.739.
+
+4. probability change if tumor size changes from 4cm to 5cm = $\frac{odds_5}{1+odds_5}-\frac{odds_4}{1+odds_4} = 0.126$     
+probability change if tumor size changes from 4cm to 10cm = $\frac{odds_{10}}{1+odds_{10}}-\frac{odds_4}{1+odds_4} = 0.441$
+
+5. If estimated probability of metastasis is at least 0.9, odds ratio will be at least 9 i.e. $e^{-2+0.52x} \geq 9$. By solving the inequality, we know that tumor size would be at least 8.072cm. 
+
+## Question 5
+
+The *Titanic* was a British luxury oceanliner that sank famously in the icy North Atlantic Ocean on its maiden voyage in April 1912. Of the approximately 2200 passengers on board, 1500 died. The high death rate was blamed largely on the inadequate supply of lifeboats, a result of the manufacturer's claim that the ship was "unsinkable." A partial dataset of the passenger list was compiled by Philip Hinde in his *Encyclopedia Titanica* and is given in the data file `Titanic.RData` at `/home/stat021f18/datasets`. Let's study the relationship between survival (*Survived*) and each of the three predictors, sex (*Sex*), passenger class (*PClass*) and age (*Age*). The information of the variables is provided below.
+
+------------------------------------------------------------------------------------
+  Variable Description
+---------- -------------------------------------------------------------------------
+*Survived* $1=$ the passenger survived; $0=$ the passenger did not survive. 
+
+     *Sex* $1=$ female; $0=$ male.
+     
+  *PClass* $1=$ first class; $2=$ second class; $3=$ third class.
+
+     *Age* Ranging from 0 to 71. 556 missing data points.
+------------------------------------------------------------------------------------
+
+1. State and fit the logistic model *Survived* ~ *Age*. Write down the estimated logistic regression line.
+
+**Answer**:   
+Denote *Survived* as $Y$ and *Age* as $X$, $$log \frac{\pi}{1-\pi} = \beta_0+\beta_1X, where \pi=P(Y=1|X)$$
+ 
+Estimated regression line: 
+$log \frac{\hat{\pi}}{1-\hat{\pi}} = -0.0814-0.0088x$, where $x$ indicates a person's age. 
+
+```{r}
+load("/home/stat021f18/datasets/Titanic.RData")
+mage <- glm(formula = Survived ~ Age, family = "binomial", data = Titanic)
+summary(mage)
+```
+
+
+
+2. Predict the probability of survival for passengers with age 2, 30 and 60.
+
+**Answer**:    
+$\hat{\pi}_2=0.475$     
+$\hat{\pi}_{30}=0.415$   
+$\hat{\pi}_{60}=0.352$
+
+```{r}
+# Estimated log(pi/(1-pi))
+logit_pi <- predict(mage, list(Age=c(2,30,60)))
+# Estimated probabilities
+est_pi <- exp(logit_pi)/(1+exp(logit_pi))
+est_pi
+```
+
+
+
+3. Calculate the odds ratio corresponding to the slope value. Explain the meaning of the odds ratio.
+
+**Answer**:    
+Odds ratio corresponding to slope value is $e^{b_1}= e^{-0.008795} = 0.991$. This is the ratio of the odds of a person at age $a$ on Titanic surviving to the odds of a person at age $a-1$ on Titanic surviving.  
+
+```{r}
+#odds ratio
+exp(-0.008795)
+```
+
+
+
+4. What does the $z$ (Wald) test for the slope tell you? Provide and interpret the 95% confidence interval of the odds ratio.
+
+**Answer**:    
+$z$ test shows that the slope is marginally significant ($p$ value=0.0928), which means *Age* is marginally significantly associated with whether a passanger survives on Titanic.    
+The odds that a person of age $x+1$ survives on Titanic is 0.991 (with 95% CL $[0.981,1.00]$) of the odds that a person of age $x$ survives on Titanic. 
+
+```{r, warning=F, message=F}
+#95% CL of odds ratio
+exp(confint(mage))
+```
+
+
+
+5. Run a likelihood ratio test for the model and draw a conclusion.
+
+**Answer**:   
+Based on likelihood ratio test, the model with predictor *Age* is marginally significant in explaining whether a passanger survived on Titanic ($p$ value=0.0914). But in view of the large sample size (756 data points for *Age* left), this marginal significance may mean that there is unlikely an association between *Age* and *Survived*. 
+
+```{r, warning=F, message=F}
+library(lmtest)
+lrtest(mage)
+1312-556
+```
+
+
+
+6. Consider the following 4 models: report their AIC values, draw ROC curves and calculate the AUC values. Compare them. Which model is the best? Explain in words what the best model tells you about the relationship beteen survival and the predictors.
+    * Model A: *Survived* ~ *Age*
+    * Model B: *Survived* ~ *Age* + *Sex*
+    * Model C: *Survived* ~ *Age* + *Sex* + *PClass*
+    * Model D: *Survived* ~ *Age* + *Sex* * *PClass*
+
+**Answer**:    
+The AIC values for Model A, B, C, D are 1026.7232, 801.5855, 703.1636 and 682.6182 respectively.   
+Model D has the lowest AIC value and the highest AUC value among the four models, and its ROC curve is closest to the high sensitivity and high specificity region on the upper left corner of the graph. Therefore Model D is the best model. This means that whether a person survived on Titanic is significantly associated with the combination of *Age*, *Sex*, *PClass* and the interaction term between *Sex* and *PClass*.  
+
+```{r, fig.width=3.3, fig.height=3, fig.show='hold', fig.align='center', warning=F, message=F}
+library(ROCR)
+library(ggplot2)
+# Function for ROC curve with AUC
+ROC <- function(model, color, title){
+  logit_pi <- predict(model)
+  est_pi <- exp(logit_pi)/(1+exp(logit_pi))
+  roc_pred <- prediction(est_pi, model$y)
+  roc_ss <- performance(roc_pred, "sens", "spec")
+  auc <- round(performance(roc_pred, "auc")@y.values[[1]], 4)
+  roc_curve <- data.frame(Sensitivity = roc_ss@y.values[[1]],
+                          One_Specificity = 1-roc_ss@x.values[[1]])
+  ggplot(data=roc_curve, aes(x=One_Specificity, y=Sensitivity))+
+    geom_path(color=color, size=1.2)+
+    geom_abline(intercept=0, slope=1, linetype=2)+
+    annotate("text", Inf, -Inf, label=paste("AUC: ", auc),
+             hjust=1, vjust=-1, size=5)+
+    xlab("1-Specificity")+
+    ggtitle(title)
+}
+
+mA <- glm(formula = Survived ~ Age, family = "binomial", data = Titanic)
+mB <- glm(formula = Survived ~ Age + Sex, family = "binomial", 
+          data = Titanic)
+mC <- glm(formula = Survived ~ Age + Sex + PClass, family = "binomial", 
+          data = Titanic)
+mD <- glm(formula = Survived ~ Age + Sex * PClass, family = "binomial", 
+          data = Titanic)
+
+#AIC values
+AIC(mA, mB, mC, mD)
+
+#ROC A
+ROC(mA, "red", "Model A")
+#ROC B
+ROC(mB, "green", "Model B")
+#ROC C
+ROC(mC, "blue", "Model C")
+#ROC D
+ROC(mD, "yellow", "Model D")
+```
+
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_10.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

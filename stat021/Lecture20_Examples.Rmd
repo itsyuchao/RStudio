@@ -1,0 +1,236 @@
+---
+title: "STAT021 Lecture 20 MLR Model Building "
+fontsize: 12pt
+date: "November 20, 2018"
+output:
+  html_document: default
+---
+
+## The perch example    
+$\bar{y} =  -3.1*10^8 + 5.9*10^3  X_{Py} -1.3*10^4 X_{Pg} + 4.6*10^5 X_{Y} -830X_{Sp}+1.3*10^4X_{Sf} -1.8*10^3X_{Ss}-300X_{C}-150X_{L}-0.027 X_{C}^2 -230 X_{Y}^2 $      
+$+ 3.7*10^{-5}X_{C}^3 +  4.5*10^{-6} X_L^3  + .038 X_Y^3 -2.9  X_{Py}X_{Y} +6.3 X_{Pg}X_{Y}  -3.2*10^4 X_{Py}X_{Sp}  -1.6*10^5  X_{Pg}X_{Sp}  -4.7*10^4 X_{Py}X_{Sf}  $      
+$-8.4*10^4 X_{Pg}X_{Sf}  -1.7*10^5  X_{Py}X_{Ss}  -2.4*10^5 X_{Pg}X_{Ss}  + 790 X_{Py}X_{C}  + 920 X_{Pg}X_{C} -460  X_{Py}X_{L}  +0.43   X_{Y}X_{Sp}  -6.4  X_{Y}X_{Sf} $      
+$+1.1 X_{Y}X_{Ss}  +0.15 X_{Y}X_{C} + 0.076 X_{Y}X_{L} -310 X_{Sp}X_{C}  -480 X_{Sf}X_{C} +  97 X_{Ss}X_{C} +900  X_{Sp}X_{L} +740 X_{Sf}X_{L}   +  860 X_{Ss}X_{L}   $      
+$-1.4 X_{C}X_{L} +16 X_{Py}X_{Y}X_{Sp}  +80 X_{Pg}X_{Y}X_{Sp} +23 X_{Py}X_{Y}X_{Sf} +42 X_{Pg}X_{Y}X_{Sf} +88 X_{Py}X_{Y}X_{Ss}+ 120 X_{Pg}X_{Y}X_{Ss}   -0.40 X_{Py}X_{Y}X_{C} -0.46 X_{Pg}X_{Y}X_{C}$     
+$+ 0.23 X_{Py}X_{Y}X_{L}  + 11 X_{Py}X_{Sp}X_{L}  +5.8 X_{Py}X_{Sf}X_{L} -0.67 X_{Py}X_{Ss}X_{L}  + 0.16 X_{Y}X_{Sp}X_{C}   + 0.25 X_{Y}X_{Sf}X_{C} -0.044 X_{Y}X_{Ss}X_{C} $      
+$-0.46 X_{Y}X_{Sp}X_{L}  -0.37 X_{Y}X_{Sf}X_{L}  -0.44 X_{Y}X_{Ss}X_{L}  + 7.0*10^{-4}* X_{Y}X_{C}X_{L} $
+
+```{r}
+# Input data
+perch <- read.table("Perch.txt",sep="\t",header=T)
+```
+
+```{r}
+# Model without any predictors)
+zeroModel <- lm(Weight ~ 1, data=perch)
+summary(zeroModel)
+```
+
+```{r}
+# Full model
+fullModel <- lm(Weight ~ Length*Width + I(Length^2) + I(Width^2), data=perch)
+summary(fullModel)
+```
+
+```{r}
+# Forward selection
+forward <- step(zeroModel, scope=list(upper = fullModel), direction="forward")
+summary(forward) # summarizes the final model
+```
+
+```{r}
+# Backward elimination
+backward <- step(fullModel, scope=list(lower = zeroModel), direction="backward")
+summary(backward) # summarizes the final model
+```
+
+```{r}
+# Stepwise procedure
+stepwise <- step(zeroModel, scope=list(upper = fullModel), direction="both")
+summary(stepwise) # summarizes the final model
+```
+
+Forward and stepwise procedures selected $Weight \sim L + L^2 + W^2$; Backward elimination selected the complete second-order model $Weight \sim L + L^2 + W + W^2 + LW$. Use $R^2_{adj}$, nested $F$ test, Mallow's $C_p$ and AIC to compare them.
+
+```{r}
+# Compare the models selected by the three methods
+# Adjusted R squared
+summary(forward)$adj.r.squared
+summary(backward)$adj.r.squared
+summary(stepwise)$adj.r.squared
+# Nested F test
+anova(forward, backward, stepwise)
+# Mallow's Cp
+anova(forward, backward, stepwise, test="Cp")
+# AIC
+AIC(forward, backward, stepwise)
+```
+
+The model $Weight \sim L + L^2 + W^2$ is probably better than the full model. But we hope to include the linear term of *Width*.
+
+```{r}
+m1 <- lm(Weight ~ Length + I(Length^2) + I(Width^2), data=perch)
+m2 <- lm(Weight ~ Length + I(Length^2) + Width + I(Width^2), data=perch)
+m3 <- lm(Weight ~ Length + I(Length^2) + Width, data=perch)
+summary(m1)$adj.r.squared
+summary(m2)$adj.r.squared
+summary(m3)$adj.r.squared
+anova(m1, m2, m3)
+anova(m1, m2, m3, test="Cp")
+AIC(m1, m2, m3)
+```
+
+These three models are not that different from each other.
+
+## The diamond example
+
+```{r}
+load("Diamonds.RData")
+head(Diamonds)
+```
+
+Consider the variables *Carat*, *Color* and *Depth* as the predictors for *TotalPrice*.
+
+```{r}
+# Model without any predictors
+zeroModel <- lm(log(TotalPrice) ~ 1, data=Diamonds)
+
+# Full model with all linear terms and two-way interaction terms
+fullModel1 <- lm(log(TotalPrice) ~ (Carat + Depth + Color)^2, data=Diamonds)
+
+# full model with all linear terms, two-way and three-way interaction terms
+fullModel2 <- lm(log(TotalPrice) ~ (Carat + Depth + Color)^3, data=Diamonds)
+
+# full model with all linear terms, two-way and three-way interaction terms, 
+# and 2nd and 3rd order polynomial terms
+fullModel3 <- lm(log(TotalPrice) ~ (Carat + Depth + Color)^3
+                 + I(Carat^2) + I(Carat^3) + I(Depth^2) + I(Depth^3),
+                 data=Diamonds)
+
+# Model Color as a quantitative variable?
+Colorq <- as.numeric(Diamonds$Color) - 1
+fullModelq <- lm(log(TotalPrice) ~ (Carat + Depth + Colorq)^3
+                 + I(Carat^2) + I(Carat^3) + I(Depth^2) + I(Depth^3),
+                 data=Diamonds)
+```
+
+```{r}
+# Forward selection
+forward1 <- step(zeroModel, scope=list(upper = fullModel1), direction="forward")
+summary(forward1)
+```
+
+```{r}
+# Backward elimination
+backward1 <- step(fullModel1, scope=list(lower = zeroModel), direction="backward")
+summary(backward1)
+```
+
+```{r}
+# Stepwise procedure
+stepwise1 <- step(zeroModel, scope=list(upper = fullModel1), direction="both")
+summary(stepwise1)
+```
+
+All three methods selected the full model that including all two-way interaction terms.
+
+```{r}
+# Forward selection
+forward2 <- step(zeroModel, scope=list(upper = fullModel2), direction="forward")
+summary(forward2)
+```
+
+```{r}
+# Backward elimination
+backward2 <- step(fullModel2, scope=list(lower = zeroModel), direction="backward")
+summary(backward2)
+```
+
+```{r}
+# Stepwise procedure
+stepwise2 <- step(zeroModel, scope=list(upper = fullModel2), direction="both")
+summary(stepwise2)
+```
+
+All three methods select the full model that includes the three-way interaction term.
+
+```{r}
+# Compare the first and second full model
+summary(forward1)$adj.r.squared
+summary(forward2)$adj.r.squared
+anova(forward1, forward2)
+anova(forward1, forward2, test="Cp")
+AIC(forward1, forward2)
+```
+
+The model with all two-way and three-way interaction terms seems to be the best.
+
+```{r}
+# trace=0: suppress the detailed output from the step() function and report the final model only
+forward3 <- step(zeroModel, scope=list(upper = fullModel3), 
+                 direction="forward", trace=0)
+backward3 <- step(fullModel3, scope=list(lower = zeroModel), 
+                  direction="backward", trace=0)
+stepwise3 <- step(zeroModel, scope=list(upper = fullModel3), 
+                  direction="both", trace=0)
+summary(forward3)
+summary(backward3)
+summary(stepwise3)
+```
+
+All three methods select the model with *Carat*, *Depth*, and their quadratic and cubic terms, *Color* and the interaction of *Carat* and *Color*.
+
+```{r}
+summary(forward2)$adj.r.squared
+summary(forward3)$adj.r.squared
+anova(forward2, forward3)
+anova(forward2, forward3, test="Cp")
+AIC(forward2, forward3)
+```
+
+The model with the linear terms, 2nd and 3rd order polynomial terms of *Carat* and *Depth*, and the interaction term of *Carat* and *Color* is much better.
+
+```{r}
+# Model Color as quantitative?
+forwardq <- step(zeroModel, scope=list(upper = fullModelq), 
+                 direction="forward", trace=0)
+backwardq <- step(fullModelq, scope=list(lower = zeroModel), 
+                  direction="backward", trace=0)
+stepwiseq <- step(zeroModel, scope=list(upper = fullModelq), 
+                  direction="both", trace=0)
+summary(forwardq)
+summary(backwardq)
+summary(stepwiseq)
+```
+
+Forward and stepwise procedures select the model with the linear terms, 2nd and 3rd order polynomial terms of *Carat* and *Depth*, and the interaction term of *Carat* and *Colorq*. The backward elimination select the full model with all two-way and three-way interaction terms and polynomial terms.
+
+Let's compare the best model when using categorical *Color* and the two models using quantitative *Colorq*.
+
+```{r}
+summary(forward3)$adj.r.squared
+summary(forwardq)$adj.r.squared
+summary(backwardq)$adj.r.squared
+anova(forward3, forwardq, backwardq)
+anova(forward3, forwardq, backwardq, test="Cp")
+AIC(forward3, forwardq, backwardq)
+```
+
+Final model: $log(TotalPrice) \sim Carat*Color + Depth + I(Carat^2) + I(Carat^3) + I(Depth^2) + I(Depth^3)$.
+
+```{r}
+finalModel <- lm(log(TotalPrice) ~ Carat*Color + Depth
+                                    + I(Carat^2) + I(Carat^3)
+                                    + I(Depth^2) + I(Depth^3),
+                 data=Diamonds)
+finalModel2 <- lm(log(TotalPrice) ~ Carat*Color + Depth
+                                    + I(Carat^2) + I(Carat^3),
+                 data=Diamonds)
+summary(finalModel)
+summary(finalModel2)
+anova(finalModel, finalModel2)
+anova(finalModel, finalModel2, test="Cp")
+AIC(finalModel, finalModel2)
+```
+
+The two models are very similar. We may choose the `finalModel` as the final model...

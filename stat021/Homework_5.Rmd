@@ -1,0 +1,389 @@
+---
+title: "STAT021 Homework 5"
+author: "Yuchao Wang"
+date: "October 10, 2018"
+output: pdf_document
+fontsize: 12pt
+---
+
+
+## Goals
+
+* Get familiar with simple linear regression model and model assumptions.
+* Understand the idea of maximum likelihood estimation.
+* Conduct SLR analysis and make inferences about the intercept and slope.
+* Check conditions/assumptions of a SLR model and use tranformations to address violations in assumptions.
+* Understand the $t$ test for the slope, ANOVA $F$ test for the model and $t$ test for the correlation.
+* Use $R^2$ to measure the strength of a SLR model.
+
+
+## Question 0 (not really a question) (5%)
+
+* DataCamp **Intermediate R** by 10/10/2018 11:55 PM **together with this problem set**.
+
+## Question 1~2
+
+Let's re-visit the `HorsePrices.txt` dataset used in Homework 1 and Lecture 2. We already studied the relationship between *Price* and *Sex*. In this problem set, let's investigate the relationship between the quantitative variables *Price*, *Height* and *Age*. Consider *Price* as the response variable for a simple linear regression model, *Height* (Question 1) or *Age* (Question 2) as the explanatory variable, do the following:
+
+a. Exploratory data analysis. State the simple linear regression model.
+b. Run the SLR model in R. Write down the estimated regression line.
+c. Report and interpret the $t$ test for the slope and the 95% confidence intervals for the intercept and slope.
+d. Run a correlation test. Compare the $t$ test for the slope, the $F$ test for the whole model, and the $t$ test for the correlation in terms of hypotheses, test statistic and $P$-value.
+e. Report and describe the meaning of the $R^2$ value.
+f. Check model assumptions and draw an overall conclusion.
+
+## Question 1
+
+Use *Height* as the explanatory variable and do a to f.
+
+**Answer**:  
+
+a. SLR model: population: $Y=\beta_0+\beta_1X+\epsilon, \epsilon \overset{iid}{\sim} N(0,\sigma)$ sample: $y=b_0+b_1x+e$ From histogram of price we can see that price (and thus the error term) may not follow a normal distribution. 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+# Note: set na.rm=T in mean() and sd() and use="complete.obs" in cor()
+# if there are missing data.
+library(ggplot2)
+theme_update(text=element_text(size=10))
+
+horse <- read.table("/home/stat021f18/datasets/HorsePrices.txt",
+                    sep="\t", header=T)
+str(horse)
+
+#exploratory step on price
+mysummary <- function(x){c(mean=mean(x,na.rm=T),sd=sd(x,na.rm=T))}
+mysummary(horse$Price)
+
+library(ggplot2) 
+ggplot(data=horse, aes(Price),stat="count")+ 
+ geom_histogram(binwidth=5000,na.rm=T)+ 
+ ggtitle("Histogram of Price") 
+
+#exploratory step on height
+mysummary(horse$Height)
+ggplot(data=horse, aes(Height),stat="count")+ 
+ geom_histogram(binwidth=0.2,na.rm = T)+ 
+ ggtitle("Histogram of Height") 
+
+#exploratory step on price in relation to height
+cor(horse$Price, horse$Height, use="complete.obs") # correlation
+
+ggplot(data=horse, aes(x=Height, y=Price))+
+  geom_point(color="skyblue3", size=2, alpha=0.8,na.rm = T)+
+  ggtitle("Horse Price vs Height")
+```
+
+b. $\hat{y}=-133791+9905x$ Residual standard error $\hat{\sigma}=13360$ on 45 degrees of freedom.
+
+```{r}
+summary(heightSLR <- lm(Price ~ Height, data=horse))
+```
+
+c. $b_1=9905.143$ $SE_{b_1}=2987.056$ $P=0.00181<0.05$ We therefore reject $H_0: \beta_1=0$.    
+95% confidence interval for intercept $\beta_0: [-232113.754,-35469.10]$. 
+95% confidence interval for slope $\beta_1: [3888.903,15921.38]$. This interval does not contain 0 $\Longleftrightarrow$ the t test for the slope is significant. 
+
+```{r}
+summary(heightSLR)$coefficients
+confint(heightSLR)
+```
+
+d.  
+In terms of hypotheses, both $t$ test for slope and $F$ test for model have $H_0: \beta_1=0$ while $t$ test for correlation has $H_0: \rho=0$, which is equivalent to the previous hypothesis.    
+In terms of test statistic, both $t$ test for slope and $t$ test for correlation share the test statistic $t=\frac{b_1}{SE_{b_1}}\sim t(n-2)=3.316$ while in $F=t^2=11$ in $F$ test.    
+In terms of $P$-value, all three tests share the same $P$-value$=0.001812$. 
+
+```{r}
+#correlation test
+cor.test(~ Price + Height, use="complete.obs", data=horse)
+```
+
+e. $R^2=0.1964$ which describes the strength of the SLR model (how much of the variability in data is explained by this simple linear relationship). This relatively strong value (about 20%) indicates that height plays a role in explaining the variation in horse price. Also $R^2=r^2$ with $r$ being the correlation coefficient.  
+
+f.  Based on the scatter plot of price vs. height and residuals vs. fitted values, we can determine that the linearity assumption is fulfilled (general linear trend in the first graph and no pattern in the second graph). Constant variance is fulfilled since BP-test shows no significance. Normality is also fulfilled based on the Q-Q plot. Zero sum is automatically fulfilled and we are not entirely sure about the independence in data collection process. Overall, the SLR model should be valid. Therefore, we are confident that there is a positive linear relationship between horse height and horse price. 
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+#check linearity
+ggplot(data=horse, aes(x=Height, y=Price))+
+ geom_point(color="skyblue3", size=2, alpha=0.8,na.rm = T)+ # Scatterplot
+ geom_smooth(method='lm', size=1.2, se=F,na.rm=T)+ # Add the regresion line
+ ggtitle("Horse Price vs Height")
+
+
+Assess <- data.frame(Residuals=heightSLR$residuals,
+ FittedValues=heightSLR$fitted.values)
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+
+ ggtitle("Residuals vs. Fitted Values")
+
+#check constant variance 
+library(lmtest)
+bptest(heightSLR)
+
+#check normal distribution
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.8)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+ 
+ ggtitle("Normal Q-Q Plot")
+```
+
+## Question 2
+
+Use *Age* as the explanatory variable and do b, c, e and f.
+
+b.  $\hat{y}=29796.8-415.9x$ Residual standard error $\hat{\sigma}=15010$ on 48 degrees of freedom.
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+summary(ageSLR <- lm(Price ~ Age, data=horse))
+```
+
+c. $b_1=-415.8631$ $SE_{b_1}=468.8925$ $P=0.380>0.05$ We therefore do not reject $H_0: \beta_1=0$.    
+95% confidence interval for intercept $\beta_0: [21849.777,37743.7968]$. 
+95% confidence interval for slope $\beta_1: [-1358.635,526.9084]$. This interval contains 0 $\Longleftrightarrow$ the t test for the slope is insignificant. 
+
+```{r}
+summary(ageSLR)$coefficients
+confint(ageSLR)
+```
+
+d.  
+In terms of hypotheses, both $t$ test for slope and $F$ test for model have $H_0: \beta_1=0$ while $t$ test for correlation has $H_0: \rho=0$, which is equivalent to the previous hypothesis.    
+In terms of test statistic, both $t$ test for slope and $t$ test for correlation share the test statistic $t=\frac{b_1}{SE_{b_1}}\sim t(n-2)=-0.887$ while in $F=t^2=0.787$ in $F$ test.    
+In terms of $P$-value, all three tests share the same $P$-value$=0.38$. 
+
+```{r}
+#correlation test
+cor.test(~ Price + Age, use="complete.obs", data=horse)
+```
+
+e. $R^2=0.01612$ which describes the strength of the SLR model (how much of the variability in data is explained by this simple linear relationship). This small value indicates age does not strongly explain the variation in price. Also $R^2=r^2$ with $r$ being the correlation coefficient.  
+
+f.  Based on the scatter plot of price vs. height and residuals vs. fitted values, we can determine that the linearity assumption is **not** fulfilled (there is no general linear trend in the first graph and no obvious pattern in the second graph). Constant variance is fulfilled since BP-test shows no significance. Normality is violated based on the Q-Q plot. Zero sum is automatically fulfilled and we are not entirely sure about the independence in data collection process. Overall, the SLR model should not be applicable in investigating the relationship between horse age and price. And we cannot draw a conclusion based on this model.  
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+#check linearity
+ggplot(data=horse, aes(x=Age, y=Price))+
+ geom_point(color="skyblue3", size=2, alpha=0.8,na.rm = T)+ # Scatterplot
+ geom_smooth(method='lm', size=1.2, se=F,na.rm=T)+ # Add the regresion line
+ ggtitle("Horse Price vs Age")
+
+
+Assess <- data.frame(Residuals=ageSLR$residuals,
+ FittedValues=ageSLR$fitted.values)
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+ # Add y=0 line
+ ggtitle("Residuals vs. Fitted Values")
+
+#check constant variance 
+library(lmtest)
+bptest(ageSLR)
+
+#check normal distribution
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.8)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+ 
+ ggtitle("Normal Q-Q Plot")
+```
+
+
+
+
+## Question 3
+
+Let's verify the maximum likelihood estimation method using our model. SLR model assumes $Y = \mu_Y + \epsilon$, where $\mu_Y = \beta_0+\beta_1X$ and $\epsilon \overset{iid}{\sim} N(0, \sigma)$. Therefore, $Y$ follows a Normal distribution with mean $\beta_0+\beta_1X$ that depends on $X$ and SD $\sigma$. We use the values of *Price* as the observed $Y$ and values of *Age* as the observed $X$. The following codes calculate the likelihood that *Price* take on these values given the values of $b_0$ and $b_1$, which are estimated by R using the maximum likelihood method.
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+# Remove eval=F above when you do the homework
+# Suppose the name of your data set is horse
+horsemodel <- lm(Price ~ Age, data=horse)
+b0 <- horsemodel$coefficients[1]; b0 # this is the value of the intercept
+b1 <- horsemodel$coefficients[2]; b1 # this is the value of the slope
+sigma <- summary(horsemodel)$sigma; sigma # SD of the residuals
+# This calculates the formula in Slide 11 of Lecture 9
+prod(dnorm(horse$Price, mean=b0+b1*horse$Age, sd = sigma))
+```
+
+Now choose arbitrary values to replace `b0` and `b1` and re-calculate the likelihood. For the example below, I chose 30000 and -400. Try two more sets of `b0` and `b1` (you may even try values that are very close to `b0` and `b1`) and report the likelihood values. What do you find? Use the maximum likelihood idea to explain why these likelihood values are always smaller than the one above.
+
+```{r}
+prod(dnorm(horse$Price, mean=30000 - 400*horse$Age, sd = sigma))
+prod(dnorm(horse$Price, mean=29797 - 415.70*horse$Age, sd = sigma))
+prod(dnorm(horse$Price, mean=10000 - 800*horse$Age, sd = sigma))
+```
+**Answer:** The probability that *Price* takes on the values as observed given any value other than the $b_0$ and $b_1$ calculated by MLE method is smaller, and the results of the MLE method is the same as that of the SLR model.  ($P_{SLR}=6.297101*10^{-240}>6.297099*10^{-240}>6.224176*10^{-240}>1.605878*10^{-264}$).  This is because mathematically both the MLE method and the SLR model, in calculating $b_0$ i.e. $\beta_0$ and $b_1$ i.e. $\beta_1$, minimizes $\sum (y-b_0-b_1x)^2$. In MLE method, to estimate the parameters given the observations by maximizing the likelihood of making the observations given these parameters, it effectively finds the best fitting linear line, which is what SLR model does, and hence any other parameter will give a smaller likelihood.  
+
+## Question 4
+
+The number of calories, number of grams of sugar and fiber per serving were measured for 36 randomly selected breakfast cereals. The data are in the file `Cereal.xls` at `/home/stat021f18/datasets`. It is well known that more sugar is related more calories in food. So in this analysis, instead, let's study the relationship between the number of grams of **Fiber** (reponse) and the number of grams of **Sugar** (explanatory) in the sample of cereals.
+
+* To import the .xls file, we need the package `readxl`. Run the following code chunk. **If you see an error message** "there is no package called 'readxl'", first install the package in RStudio. Then run the following codes again.
+
+```{r}
+# Install and load the package readxl for importing excel file
+library(readxl)
+# Import the file Cereal.xls
+Cereal <- read_excel("/home/stat021f18/datasets/Cereal.xls")
+```
+
+1. Generate and comment on the histograms and calculate the means and SDs for *Fiber*, *Sugar*, *log(Fiber + 1)* and *log(Sugar + 1)*. Check the values of these variables and discuss why we do $+1$ in the $\log()$ function.
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+str(Cereal)
+
+#exploratory step on Fiber
+mysummary <- function(x){c(mean=mean(x,na.rm=T),sd=sd(x,na.rm=T))}
+mysummary(Cereal$Fiber)
+
+ggplot(data=Cereal, aes(Fiber),stat="count")+ 
+ geom_histogram(binwidth=2,na.rm=T)+ 
+ ggtitle("Histogram of Fiber") 
+
+#exploratory step on log(fiber+1) 
+mysummary(log(Cereal$Fiber+1))
+
+ggplot(data=Cereal, aes(log(Fiber+1)),stat="count")+ 
+ geom_histogram(binwidth=0.4,na.rm=T)+ 
+ ggtitle("Histogram of log(Fiber+1)") 
+
+#exploratory step on Sugar
+mysummary(Cereal$Sugar)
+ggplot(data=Cereal, aes(Sugar),stat="count")+ 
+ geom_histogram(binwidth=2,na.rm = T)+ 
+ ggtitle("Histogram of Sugar") 
+
+#exploratory step on log(sugar+1)
+mysummary(log(Cereal$Sugar+1))
+
+ggplot(data=Cereal, aes(log(Sugar+1)),stat="count")+ 
+ geom_histogram(binwidth=0.3,na.rm=T)+ 
+ ggtitle("Histogram of log(Sugar+1)") 
+```
+
+**Answer:** The histogram of *Fiber* shows a significant skew to the right, which indicates that the error term does not follow normal distribution. We can transform the fiber data with a logarithmic function. *Sugar* data also shows a right skew, but we do not yet have good reason to start with a log-transform on the explanatory variable at this stage. In any case, we need to add 1 in the log-transform because some values of fiber (and sugar) are 0.        
+       
+       
+--------------------------------------
+ Variables         Mean       SD
+---------------- ---------- ----------
+ *Fiber*           3.592      3.611  
+
+ *Sugar*           5.714      4.604
+ 
+ *log(Fiber+1)*    1.232      0.780
+ 
+ *log(Sugar+1)*    1.568      0.938
+--------------------------------------
+
+
+2. Consider the three models below:
+
+**Model A**: *Fiber* ~ *Sugar*  
+**Model B**: *log(Fiber+1)* ~ *Sugar*  
+**Model C**: *log(Fiber+1)* ~ *log(Sugar+1)*  
+
+Generate the scatterplots with regression lines for the three relationships. Comment.
+
+
+**Answer:** All three scatterplots show a negative slope in their linear regression lines, but it is difficult to decide based on the graph which one produces a better linear fit (the data points are all relatively spaced out from the regression line in the three scatterplots). The decrease in scale of the axis is just because of the log-transformation, which scaled down the absolute values of the data given the range.
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+#Fiber ~ Sugar 
+ggplot(data=Cereal, aes(x=Sugar, y=Fiber))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+ # Scatterplot
+ geom_smooth(method='lm', size=1.2, se=F)+ # Add the regresion line
+ ggtitle("Cereal Fiber vs Sugar")
+
+#log(fiber+1) ~ sugar
+ggplot(data=Cereal, aes(x=Sugar, y=log(Fiber+1)))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+ # Scatterplot
+ geom_smooth(method='lm', size=1.2, se=F)+ # Add the regresion line
+ ggtitle("Cereal log(Fiber+1) vs Sugar")
+
+#log(fiber+1) ~ log(sugar+1)
+ggplot(data=Cereal, aes(x=log(Sugar+1), y=log(Fiber+1)))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+ # Scatterplot
+ geom_smooth(method='lm', size=1.2, se=F)+ # Add the regresion line
+ ggtitle("Cereal log(Fiber+1) vs log(Sugar+1)")
+
+```
+
+
+3. Run these simple linear regression models in R. Summarize the $t$ statistics, $P$-values, $R^2$ values, BP test statistics and $P$-values for the three models in the following table. Generate residuals versus fitted values plot and Normal Q-Q plot for each model. Compare the three models in terms of model fitting and assumption checking. Which model is the best? (Lecture 9 Slide 19~28, Lecture 10 Slide 16~27)
+
+**Answer**:
+
+```{r, fig.width=3, fig.height=3, fig.show='hold', fig.align='center'}
+# For the BP test, first install the package lmtest, then library(lmtest).
+#model A
+summary(cerealSLR1 <-lm(Fiber~Sugar, data=Cereal))
+bptest(cerealSLR1)
+
+Assess <- data.frame(Residuals=cerealSLR1$residuals,
+ FittedValues=cerealSLR1$fitted.values)
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+ 
+ ggtitle("Residuals vs. Fitted Values Model A")
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.8)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+ 
+ ggtitle("Normal Q-Q Plot Model A")
+
+#model B
+summary(cerealSLR2 <-lm(log(Fiber+1)~Sugar, data=Cereal))
+bptest(cerealSLR2)
+
+Assess <- data.frame(Residuals=cerealSLR2$residuals,
+ FittedValues=cerealSLR2$fitted.values)
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+ 
+ ggtitle("Residuals vs. Fitted Values Model B")
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.8)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+ 
+ ggtitle("Normal Q-Q Plot Model B")
+
+#model C
+summary(cerealSLR3 <-lm(log(Fiber+1)~log(Sugar+1), data=Cereal)) 
+bptest(cerealSLR3)
+
+Assess <- data.frame(Residuals=cerealSLR3$residuals,
+ FittedValues=cerealSLR3$fitted.values)
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(color="skyblue3", size=2, alpha=0.8)+
+ geom_hline(yintercept=0, size=1.2, colour="grey50")+ 
+ ggtitle("Residuals vs. Fitted Values Model C")
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="skyblue3", alpha=0.8)+
+ geom_abline(intercept=0, slope=1, size=1.2, colour="grey50")+ 
+ ggtitle("Normal Q-Q Plot Model C")
+```
+
+**Answer:**  First of all, we reject the model A with *Fiber*~*Sugar* because it failed the BP-test (constant variance assumption violated) and we can see from the normal Q-Q plot that its error term violate the normality assumption as well. Both model B (with *log(Fiber+1)*~*Sugar*) and model C (*log(Fiber+1)*~*log(Sugar+1)*) fulfill the constance variance and normality assumptions. Also, both model B and C fulfill the linearity (SLR model shows significant $P$-value) and zero sum assumption, and we can assume that data are independent. Model B has a smaller $P$-value than model C (hence model B is more significant/has a better fitting line). Also, model B is stronger in explaning the variability in the data (with a greater $R^2$ value). Therefore the best model among the three is model B i.e. *log(Fiber+1)*~*Sugar*. 
+
+--------------------------------------------------------------------------------------------------
+ Model        *Fiber*~*Sugar*            *log(Fiber+1)*~*Sugar*     *log(Fiber+1)*~*log(Sugar+1)*
+------------ -------------------------- -------------------------- -------------------------------
+ $t$, $P$     $t=-3.390$, $P=0.00179$    $t=-3.643$, $P=0.000889$   $t=-3.219$, $P=0.00283$
+
+ $R^2$        0.2526                     0.2807                      0.2336
+
+ BP, $P$      $BP=5.9041$, $P=0.01511$   $BP=1.1585$, $P=0.2818$    $BP=0.66076$, $P=0.4163$
+--------------------------------------------------------------------------------------------------
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_5.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

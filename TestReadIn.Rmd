@@ -1,0 +1,33 @@
+---
+title: "TestReadIn"
+author: "Yuchao Wang"
+date: "7/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+```
+
+```{r, echo = FALSE}
+#This chunk prepares the list of words 
+#EmoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", header=TRUE, sep=",")
+#str(EmoDM)
+#EmoDM <- EmoDM[-c(1:10),]
+#write.csv(EmoDM, file = "forSeparationIntoColumns.csv")
+
+TempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",")
+sum(TempDM[8,] != "")
+TempDM <- TempDM[-c(9:13),]
+TempDM[] <- lapply(TempDM, as.character) #set data type from factor to character
+TempDM <- as.matrix(TempDM) 
+TempDM <- t(TempDM) 
+colnames(TempDM) <- TempDM[1, ]
+TempDM <- TempDM[-1,]
+TempDM <- as.data.frame(TempDM)
+TempDM <- gather(TempDM, "qnNum", "word", 1:8)
+TempDM <- TempDM[!(TempDM$word == ""), ]
+
+
+```

@@ -1,0 +1,324 @@
+---
+title: "STAT021 Homework 4"
+author: "Yuchao Wang"
+date: "October 3, 2018"
+fontsize: 12pt
+output: pdf_document
+---
+
+
+## Goals
+
+* Use $R^2$ statistic to measure the strength of an ANOVA model.
+* Understand type I error and conduct multiple pairwise comparisons.
+* Apply and understand two-way ANOVA additive model and model with interaction.
+* Use interaction plot to explain the relationship between variables.
+
+
+## Question 0 (not really a question) (5%)
+
+* DataCamp **Intermediate R** by 10/10/2018 11:55 PM.
+
+## Questions 1~5
+
+For centuries, people looked at the full moon with some trepidation. From stories of werewolves coming out, to more crime sprees, the full moon has gotten the blame. Some researchers in the early 1970s set out to actually study whether there is a "full-moon" effect on the mental health of people. The researchers collected admissions data for the emergency room at a mental health hospital for 12 months. They separated the data into rates before the full moon (mean number of patients seen 4-13 days before the full moon), during the full moon (the number of patients seen on the full moon day), and after the full moon (mean number of patients seen 4-13 days after the full moon). They also kept track of which month the data came from since there was likely to be a relationship between admissions and the season of the year. The data can be found in the file `MentalHealth.txt` at `/home/stat021f18/datasets`.
+
+## Question 1
+
+***Admission* ~ *Season***
+
+1. Generate a boxplot of *Admission* by *Season*. Comment.
+2. Run a one-way ANOVA model for *Admission* on *Season*. Interpret the result.
+3. To carry out multiple pairwise comparisons, calculate the number of comparisons for this analysis. What is the family-wise type I error rate if each individual test has $\alpha = 0.05$? (Hint: Lecture 7)
+4. Use Fisher's LSD, Bonferroni correction and Tukey's HSD to do pairwise comparisons. For Bonferroni correction and Tukey's HSD, use $\alpha=0.05$ family-wisely. Compare the results from the three methods. Draw an overall conclusion on how the *Admission* values differ among the seasons. (Hint: Lecture 7)
+
+```{r, fig.width=5, fig.height=3}
+# You need the package agricolae for the R function LSD.test()
+MH <- read.table("/home/stat021f18/datasets/MentalHealth.txt",
+                    sep="\t", header=T)
+```
+
+**Answer**:
+
+1. From the boxplot of admission by season we notice that the mean number of admission in each season is different (with admission during spring being the highest), indicating possible group effect by season on admisson to mental health hospitals. The variance of admission in each season is different (admission during summer varies the most).
+
+```{r, fig.width=5, fig.height=3}
+library(ggplot2)
+ggplot(data=MH, aes(x=Season, y=Admission))+
+  geom_boxplot(aes(fill=Season))+
+  scale_fill_brewer()+
+  stat_summary(fun.y=mean, geom="point")+
+  ggtitle("Boxplot of Admission by Season")
+```
+
+2. Since $p-value=0.0056<0.05$, it is statistically significant that we reject the null hypothesis that there is no group effect of season on the admission to mental health hospitals, and say that at least one season has a group effect that significantly changes the mean number of admissions. $R^2=0.32$ means that the strength of the model is not that weak. 
+
+```{r}
+mhmodel <- aov(Admission ~ Season, data=MH)
+summary(mhmodel)
+200.9/(200.9+424)
+```
+3. The total number of pairwise comparisons $=C^2_4=\frac{4*3}{2!}=6$    
+Family-wise type I error rate $=1-0.95^6=0.26$ 
+```{r, echo=F}
+1-0.95^6
+```
+
+4. Fisher's LSD gives three significant comparisons: a. fall-spring, b. spring-summer, c. spring-winter, while both Bonferroni correction and Tukey's HSD give two significant comparisons: a. spring-fall, b. winter spring. Since even the most conservative Bonferroni correction gives two statistically significant comparisons, same as the result of Tukey's HSD, we can reject the null hypothesis and say that there is significant difference in mean admission between fall and spring seasons as well as between spring and winter seasons.
+
+```{r}
+library(agricolae) 
+# Fisher's LSD
+LSD.test(y = mhmodel, trt="Season", group=F)$comparison
+#Bonferroni correction, default family wise p=0.05
+LSD.test(y = mhmodel, trt="Season", group=F, p.adj="bon")$comparison
+#Tukey's HSD, default family wise p=0.05
+TukeyHSD(mhmodel) 
+```
+
+
+## Question 2
+
+**Model 1: *Admission* ~ *Season2***
+
+Let's combine *Spring* and *Summer* into one category *SpringSummer* and *Fall* and *Winter* into *FallWinter*, and define a new variable *Season2* (codes are provided in the following chunk; delete `eval=FALSE` to allow the codes to run in the knitted .pdf file; replace the name `mentalhealth` with whatever name you gave to your data set). Run a pooled two-sample $t$ test to compare the *Admission* values between *SpringSummer* and *FallWinter*. Run a one-way ANOVA model for *Admission* on *Season2*. Compare the two models in terms of hypotheses, test statistics and $P$-values. (Hint: Lecture 8 Slide 7~9)
+
+
+**Answer:**     
+Both pooled two sample $t$ test and one way ANOVA model assume equal variance of the two groups, $\epsilon=0$, normal distribution (by Central Limit Theorem in $t$ test), and independence, so they are essentially calculating the same $p$ value (therefore in this case $p$ values for both tests are $0.00658<0.05$). Also, the test statistics have the relationship $t^2=F$, though $t$-statistics can show the direction of the relationship. They also have the same conclusion that it is statistically significant that mean admission differs by *Season2* (SpringSummer or FallWinter). 
+
+
+
+```{r}
+Season2 <- MH$Season
+levels(Season2) <- list("SpringSummer" = c("Spring", "Summer"),
+                        "FallWinter" = c("Fall", "Winter"))
+MH <- data.frame(MH, Season2)
+
+#pooled two sample T-test (equal var assumption)
+t.test(Admission ~ Season2, data=MH, var.equal = T) 
+#one way ANOVA
+summary(aov(Admission ~ Season2, data=MH))
+```
+
+## Question 3
+
+**Model 2: *Admission* ~ *Moon***  
+**Model 3: *Admission* ~ *Season2* + *Moon***
+
+Run a one-way ANOVA model for *Admission* on *Moon*. Run a two-way ANOVA additive model for *Admission* on both *Season2* and *Moon*. (Hint: Lecture 8 Slide 10~15)
+
+1. State the two-way ANOVA additive model and hypotheses.
+2. Interpret both $F$ tests in the two-way ANOVA additive model. Draw a conclusion about the relationship between *Admission* and *Season2* and the relationship between *Admission* and *Moon*.
+3. Report the $F$ statistic and $P$-value for the *Season2* term in Model 1 and Model 3. Usually, larger $F$ statistic is associated with smaller $P$-value (Lecture 5 Slide 9). Why in this case the larger $F$ statistic results in a larger $P$-value? (Hint: think about how $P$-value is calculated.)
+4. Calculate the $R^2$ value for Model 1, 2 and 3. Describe the meaning of the values. Which model has the largest $R^2$? Why?
+
+**Answer**:
+
+```{r}
+#one way ANOVA for admission ~ moon
+summary(aov(Admission ~ Moon, data=MH))
+#two way additive ANOVA for admission ~ moon + season2
+summary(aov(Admission ~ Moon + Season2, data=MH))
+```
+
+1. Model: $Y=\mu+\alpha_k+\beta_j+\epsilon$, where $k=A(after),B(Before),C(during)$ and $j=1(SpringSummer),2(FallWinter)$, $\epsilon \overset{iid}\sim N (0, \sigma)$. A effect $H_0: \alpha_A=\alpha_B=\alpha_C=0$, B effect $H_0: \beta_1=\beta_2=0$ and A effect $H_a:$ at least one $\alpha_k \neq 0$, B effect $H_a:$ at least one  $\beta_j \neq 0$. 
+
+2. Since $F_{season2}=0.00616<0.05$, it is statistically significant that there is a difference in group mean between mental health admissions in SpringSummer vs. in FallWinter (we reject null hypothesis for B effect). Since $F_{moon}=0.25>0.05$, it is not statistically significant that there is a difference in group mean among mental health admissions before, during, or after the full moon (we do not reject null hypothesis for A effect). 
+
+3. Model 1: $F$ statistic$=8.381$ $p$ value$=0.00658$. 
+Model 3:  $F$ statistic$=8.600$ $p$ value$=0.00616$. 
+In this case, the larger $F$ statistic does lead to a smaller $p$ value. However, it is possible for the opposite to happen i.e. a larger $F$ statistic gives a larger $p$ value as compared to a smaller $F$ statistic. This is because $F$ statistic determines the place on the $F$ distribution where the area under the curve to the right of the $F$ statistic gives the $p$ value. However, if the degree of freedom is large, the $F$ distribution can shift to the right, in which case even a slightly larger $F$ statistic does not offset this shift, and the area under the curve to the right of $F$ statistic (i.e. $p$ value) can be larger instead. 
+
+4. $R^2_{model1}=0.198, R^2_{model2}=0.066, R^2_{model3}=0.264$  $R^2$ value describes the strength of the model in explaining the total response variability of the data. For example in model 1, $R^2_{model1}=0.198$ means that 19.8% of the variability in the data can be explained by seasonal differences between SpringSummer and FallWinter. Model 2:  6.6% of the variability in the data can be explained by the full moon (before, during or after). Model 3: Thus in this additive two way ANOVA model, 26.4% of the variation in data (the highest $R^2$) can be explained by season2 **and** moon conditions, since it considers more categorical variables to account for the total variability. 
+
+$$
+R^2=\frac{SSG}{SST}=\frac{SSA+SSB}{SST}=1-\frac{SSE}{SST} 
+$$
+
+```{r}
+#Model1 
+1-501.3/(501.3+123.6)
+#Model2
+1-583.4/(583.4+41.5)
+#Model3
+1-459.8/(459.8+123.6+41.5)
+```
+
+
+## Question 4
+
+**Model 4: *Admission* ~ *Season2* * *Moon***
+
+State the two-way ANOVA model with **interaction** for *Admission* on both *Season2* and *Moon*. Run the model in R. Interpret all the $F$ tests. What does the interaction term tell you? Calculate the $R^2$ value. Which model of the four models do you think is the best to describe the relationship? (Hint: Lecture 8 Slide 16~19)
+
+**Answer**:
+Model: $Y=\mu+\alpha_k+\beta_j+\gamma_{kj}+\epsilon$, where $k=A(after),B(Before),C(during)$ and $j=1(SpringSummer),2(FallWinter)$, $\epsilon \overset{iid}\sim N (0, \sigma)$. A effect $H_0: \alpha_A=\alpha_B=\alpha_C=0$, $H_a:$ at least one $\alpha_k \neq 0$. B effect $H_0: \beta_1=\beta_2=0$, $H_a:$ at least one  $\beta_j \neq 0$. Interaction effect of A*B $H_0: \gamma_{A1}=\gamma_{A2}=\gamma_{B1}=...=0$, $H_a:$ at least one $\gamma_{kj} \neq 0$.    
+Only *season2* has statistically significant effect on *admission* ($p=0.00741<0.05$), while both *moon* and the interaction term season2*moon have $p$ values much larger than 0.05 (0.266 and 0.709, respectively). $R^2_{model4}=0.281$. Though the $R^2$ value for Model 4 is the highest (strongest strength of model), both the interaction term and the moon are not significant in explaining the variation in admissions (these two terms in the model have no statistic significance). So I think the best model to describe the relationship is Model 1 (between admission and season2), which is both significant and strong. 
+
+```{r}
+summary(aov(Admission ~ Moon * Season2, data=MH))
+1-449.4/(449.4+10.4+123.6+41.5)
+```
+
+
+## Question 5
+
+Generate an interaction plot with error bars to explain the relationship you found in the ANOVA models (Set *Moon* on the $x$-axis). Use the plot to discuss why the interaction term in the ANOVA model is or is not significant. (Hint: Lecture 8 Slide 20~26)
+
+**Answer**:   
+Through the interaction plot, we can see that the effect of Moon on Admission for different Season2 are almost identical (the almost parallel lines) especially when one considers the variation allowed by the error bar. So the interaction effect is not significant.  
+
+```{r, fig.width=5, fig.height=3}
+mysummary <- function(x){c(number=length(x),mean=mean(x),sd=sd(x))}
+MHsummary <- aggregate(Admission ~ Season2 + Moon, data=MH, FUN=mysummary)
+MHsummary <- data.frame(MHsummary, MHsummary$Admission)[-3]
+MHsummary
+
+ggplot(data=MHsummary, aes(x=Moon, y=mean, colour=Season2))+
+ geom_point(size=3)+ # Add the points for the mean
+ geom_line(aes(group=Season2), size=1.2)+ # Add the lines
+ geom_errorbar(aes(ymax = mean+sd/sqrt(number), 
+                   ymin = mean-sd/sqrt(number)),
+ size=0.9, width=0.08)+ # Add the error bars
+ ylab("Admission") + ggtitle("Interaction Plot")
+```
+
+
+## Question 6
+
+Hamisi Babusa, a Kenyan scholar, administered a survey to 480 students from Pwani and Nairobi provinces about their attitudes toward the Swahili language. In addition, the students took an exam on Swahili. From each province, the students were from 6 schools (3 girls' schools and 3 boys' schools), with 40 students sampled at each school, so half of the students from each province were males and the other half females. The survey instrument contained 40 statements about attitudes toward Swahili and students rated their level of agreement on each. Of these questions, 30 were positive questions and the remaining 10 were negative questions. On an individual question, the most positive response would be assigned a value of 5, while the most negative response would be assigned a value of 1. By summing (adding) the responses to each question, we can find an overall **Attitude Score** for each student. The highest possible score would be 200 (an individual who gave the most positive possible response to every question). The lowest possible score would be 40 (an individual who gave the most negative response to every question). The data are stored in `Swahili.txt` at `/home/stat021f18/datasets`.
+
+1. Conduct exploratory data analysis on each variable and the relationship between the response variable and each explanatory variable. Also provide the interaction plot with error bars to visualize the relationship.
+
+**Answer:** Based on the box plot and the interaction plot, we can see that it is highly likely to be a group effect on mean attitude scores by gender and by province. There is likely a strong interaction effect between gender and province as well. And all the data seem roughly normally distributed. 
+
+```{r, fig.width=5, fig.height=3}
+#read in data
+Swah <- read.table("/home/stat021f18/datasets/Swahili.txt",
+                    sep="\t", header=T)
+str(Swah)
+#exploratory step on attitude score
+mysummary(Swah$Attitude.Score)
+
+library(ggplot2) 
+ggplot(data=Swah, aes(Attitude.Score),stat="count")+ 
+ geom_histogram(binwidth=5)+ 
+ ggtitle("Histogram of Attitude Scores") 
+
+#exploratory step on attitude score in relation to sex and province
+Swahsummary <- aggregate(Attitude.Score ~ Sex + Province, data=Swah, 
+                         FUN=mysummary)
+Swahsummary <- data.frame(Swahsummary, Swahsummary$Attitude.Score)[-3]
+Swahsummary
+
+ggplot(Swah,aes(x=Province,y=Attitude.Score,fill=Sex))+
+  geom_boxplot()+
+  stat_summary(fun.y=mean,geom="point",position=position_dodge(.75))
+
+ggplot(Swah, aes(Attitude.Score))+
+  geom_histogram(binwidth=5, aes(fill=Sex))+
+  scale_fill_brewer()+
+  facet_grid(Sex ~ .)+
+  ggtitle("Histogram of Attitude Score by Sex") 
+
+ggplot(Swah, aes(Attitude.Score))+
+  geom_histogram(binwidth=5, aes(fill=Province))+
+  scale_fill_brewer()+
+  facet_grid(Province ~ .)+
+  ggtitle("Histogram of Attitude Score by Province")
+
+ggplot(data=Swahsummary, aes(x=Province, y=mean, colour=Sex))+
+ geom_point(size=2)+ # Add the points for the mean
+ geom_line(aes(group=Sex), size=1.2)+ # Add the lines
+ geom_errorbar(aes(ymax = mean+sd/sqrt(number), 
+                   ymin = mean-sd/sqrt(number)),
+ size=0.9, width=0.08)+ # Add the error bars
+ ylab("Attitude Score") + ggtitle("Interaction Plot")
+```
+
+2. Run a two-way ANOVA model with interaction. Interpret each $F$ test. Calculate and describe the meaning of the $R^2$ value.
+
+**Answer:** $F$ test for Sex shows that there is a significant effect of sex on the attitude score (reject null hypothesis of no group effect by sex). $F$ test for Province shows that there is a significant effect of province on the attitude score (reject null hypothesis of no group effect by province). $F$ test for Sex*Province shows that there is a significant effect of the interaction term between Sexn and Province on the attitude score (reject null hypothesis of no group effect by interaction term). 
+$$
+R^2=1-\frac{SSE}{SST}=0.525
+$$ 
+The $R^2$ value shows that 52.5% of the total variability in the data can be explained by the combination of group effects by sex, province, and the interaction term between sex and province.
+
+```{r, fig.width=5, fig.height=3}
+Swahmodel <- aov(Attitude.Score ~ Sex * Province, data=Swah)
+summary(Swahmodel)
+1-43917/(43917+5320+32275+11021)
+```
+
+3. Check error assumptions for this model. Transform the response variable if necessary. Draw an overall conclusion on the analysis.     
+
+**Answer:** The Q-Q plot and the scatter plot of the residuals show that the residuals (error terms) generally follow normal distribution with equal variance ($N(0,\sigma)$). The mean error is always zero and by the data collecting process, sex and province are independent. Therefore the assumptions are valid. It is thus significant that both sex and province have a group effect on mean attitude score, and the interaction term of sex * province has a group effect on mean attitude score. 
+
+```{r, fig.width=5, fig.height=3}
+Assess <- data.frame(FittedValues=Swahmodel$fitted.values,
+ Residuals=Swahmodel$residuals) # prepare the data
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+ 
+  # scale(): standardizing
+ stat_qq(size=3, color="orange", alpha=0.6)+ # Q-Q plot
+ geom_abline(intercept=0, slope=1)+ # add y=x line
+ ggtitle("Normal Q-Q Plot")
+
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(size=3, color="orange", alpha=0.6)+ # plot points
+ geom_hline(yintercept=0) # add y=0 line
+
+```
+
+
+
+## Question 7
+
+Researchers at Temple University wanted to know the following: If you work waiting tables and you draw a happy face on the back of your customers' checks, will you get better tips? To study this question, they enlisted the cooperation of two servers at a Philadelphia restaurant. One was male, the other female. Each server recorded his or her tips for their next 50 tables. For 25 of the 50, following a predetermined randomization, they drew a happy face on the back of the check. The other 25 randomly chosen checks got no happy face. The response was the tip, expressed as a percentage of the total bill. The **averages** for the male server were 18% with a happy face, 21% with none. For the female server, the **averages** were 33% with a happy face, 28% with none.
+
+Fill out the following ANOVA table. Show the steps briefly how you get each value. Interpret each $F$ test. Calculate the $R^2$ value. Draw a conclusion.
+
+**Answer**: *Steps are shown in the comment section of each calculation done in R.*   
+$F$ test for happy face shows that there is a significant effect of drawing a happy face on the average tip value (reject null hypothesis of no group effect by happy face). $F$ test for gender shows that there is a significant effect of server's gender on the average tip value (reject null hypothesis of no group effect by gender). $F$ test for interaction term shows that there is a significant effect of the interaction term between gender and happy face on the average tip value (reject null hypothesis of no group effect by interaction term). 
+$$
+R^2=1-\frac{SSE}{SST}=0.269
+$$ 
+The $R^2$ value shows that 26.9% of the total variability in the data of tips value can be explained by the combination of group effects by server's gender, happy face, and the interaction term between gender and happy face.
+
+```{r}
+0.005*96 #SSE=MSE*dfe
+0.657-0.48-0.082-0.044 #SS_happyface=SST-SSE-SS_interaction-SS_gender
+0.051/0.005 #MS_happyface=SS_happyface/df_happyface
+0.044/0.005 #MS_gender=SS_gender/df_gender
+0.082/0.005 #MS_interaction=SS_interaction/df_interaction
+1-pf(10.2, df1=1, df2=96) #calculate p-value with F(K-1,n-KJ)
+1-pf(8.8, df1=1, df2=96) #calculate p-value with F(J-1,n-KJ)
+1-pf(16.4, df1=1, df2=96) #calculate p-value with F((K-1)(J-1),n-KJ)
+1-0.48/0.657
+```
+
+-----------------------------------------------------
+ Source        DF   SS      MS      $F$      $P$-value
+------------- ---- ------- ------- -------- -----------
+ HappyFace     1    0.051   0.051   10.2      0.00190
+ 
+ Gender        1    0.044   0.044   8.8       0.00380
+  
+ Interaction   1    0.082   0.082   16.4      0.000104
+ 
+ Residuals     96   0.48   0.005
+
+ Total         99   0.657
+-------------------------------------------------------
+
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_4.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.

@@ -1,0 +1,471 @@
+---
+title: "STAT021 Homework 3"
+author: "Yuchao Wang"
+date: "September 26, 2018"
+fontsize: 12pt
+output: pdf_document
+---
+
+
+## Goals
+
+* Understand the idea of the ANOVA method. 
+* Get familiar with the process of conducting ANOVA.
+* Interpret ANOVA table.
+* Check ANOVA model assumptions and practice data transformation.
+
+
+## Question 0 (not really a question) (5%)
+
+* DataCamp **Intermediate R** by 10/10/2018 11:55 PM.
+
+## Question 1
+
+Suppose that you want to compare the ages of cars among faculty, students, administrators, and staff at your college or university. You take a random sample of 200 people who have a parking permit for your college or university, and then you ask them how old their primary car is.
+
+1. Identify the explanatory and response variables in this study.
+
+**Answer:**  Explanatory variable is the categorical variable of a person's identity at college or university (faculty, students, administrators, or staff). Response variable is the ages of their cars. 
+ 
+
+2. Was this an observational study or a randomized experiment? Explain how you know.
+
+**Answer:**  This was a randomized experiment since samples were randomly selected from the total population (faculty, students, administrators, and staff at one's college or university). 
+
+
+3. Determine each of the entries that would appear in the "degrees of freedom" column of the ANOVA table.
+
+**Answer:**  $K$ is the number of groups and $n$ is the sample size. Degree of freedom for model $=K-1=4-1=3$. Degree of freedom for error $=n-K=200-4=196$. Degree of freedom total $=n-1=199$. 
+
+
+
+## Question 2
+
+Suppose that an instructor wanted to investigate whether the font used on an exam affects student performance as measured by the final exam score. She used three different fonts (times, courier and helvetica) and randomly assigned her 36 students to one of those three fonts.
+
+1. Identify the explanatory and response variables in this study.
+
+**Answer:**  Explanatory variable is the font used (categorical variable). Response variable is the students' performance i.e. test scores (quantitative variable).  
+ 
+
+2. Was this an observational study or a randomized experiment? Explain how you know.
+
+**Answer:**  It is a randomized experiment because the students were randomly assigned to three different test conditions (fonts). 
+
+
+3. Determine each of the entries that would appear in the "degrees of freedom" column of the ANOVA table.
+
+**Answer:**  $K$ is the number of groups and $n$ is the sample size. Degree of freedom for model $=K-1=3-1=2$. Degree of freedom for error $=n-K=36-3=33$. Degree of freedom total $=n-1=36-1=35$. 
+
+
+
+4. Now suppose that the $P$-value from the ANOVA $F$-test turned out to be 0.003. All of the following statements are false. Explain why each one is false.
+    a. The probability is 0.003 that the three groups have the same mean score.
+    b. The data provide very strong evidence that all three fonts produce different mean scores.
+    c. The data do not allow for drawing a cause-and-effect conclusion between font and exam score.
+    d. Conclusions from this analysis can be directly generalized to the population of all students at the instructor's school.
+
+**Answer:**  
+
+a. The probability is 0.003 that the total population mean scores when students take exams in the three fonts are the same, but the ANOVA F-test made a type I error in rejecting the null hypothesis ($H_0: \mu_1=\mu_2=\mu_3$). 
+b. The data provide very strong evidence that at least one of the three fonts produce a different mean score. 
+c. The data allow one to draw a cause-and-effect conclusion between font and exam score since it is a controlled experiment with randomized samples, and the result indicates statistic significance. 
+d. Conclusion cannot be directly generalized to the population of all students at the instructor's school, since the instructor's class is not a randomized sample for all students in the school (e.g. they are of the same grade). 
+
+
+## Question 3
+
+The computations in an ANOVA model are usually done by statistical programs. Let's use a simple example to understand the process of conducting the ANOVA $F$ test starting from the raw data without using the `aov()` function in R. You may use R functions to calculate sums, means, SDs, $P$-value and so on.
+
+The following 6 observations of $Y$ come from 3 different groups A, B and C. 
+
+---------------------------
+ Observation   Group   $Y$
+------------- ------- -----
+  1              A      0
+  
+  2              A      2
+  
+  3              B      4
+  
+  4              B      6
+  
+  5              C      8
+  
+  6              C      10
+---------------------------
+
+1. State the ANOVA model, null and alternative hypotheses using math notations. (Hint: Lecture 5 Slide 13~14)
+2. Calculate the overall mean and SD, and means and SDs of each group. (Hint: Lecture 5 Slide 7, 19)
+3. Calculate the sum of squares, degree of freedom, mean square, $F$ statistic and $P$-value for the test and fill everything in the ANOVA table. Show steps briefly. (Hint: Lecture 5 Slide 24~26, Lecture 6 Slide 9~11; the summations are over all **individual** observations)
+4. State your conclusion.
+
+**Answer:**
+
+1. Model: $Y=\mu+\alpha_k+\epsilon$, where $k=A,B,C$ and $\epsilon \overset{iid}\sim N (0, \sigma)$. $H_0: \alpha_A=\alpha_B=\alpha_C=0$, and $H_a:$ at least one $\alpha_k \neq 0$.
+
+2. Grand mean $\bar{y}=5$, grand SD $s=3.74$.    
+Mean of group A $\bar{y_A}=1$ and SD of group A $s_A=1.41$.   
+Mean of group B $\bar{y_B}=5$ and SD of group B $s_B=1.41$.    
+Mean of group C $\bar{y_C}=9$ and SD of group C $s_C=1.41$. 
+
+```{r}
+mean(g<-c(0,2,4,6,8,10)) #grand mean
+sd(g) #grand SD
+sd(c(0,2)) #by observation, this SD will apply 
+#also to group B and C since A,B,C all contain 
+#two elements and one element is one 
+#greater than the group mean while the other 
+#is one smaller than the group mean.  
+```
+
+3. 
+```{r}
+(1-5)^2*2+(5-5)^2*2+(9-5)^2*2 #SSG
+(0-1)^2+(2-1)^2+(4-5)^2+(6-5)^2+(8-9)^2+(10-9)^2 #SSE
+(0-5)^2+(2-5)^2+(4-5)^2+(6-5)^2+(8-5)^2+(10-5)^2 #SSTotal
+64/2 #MSG=SSG/dfg
+6/3 #MSE=SSE/dfe
+32/2 #F-statistic=MSG/MSE
+1-pf(16, df1=2, df2=3) #P-value
+```
+
+----------------------------------------------------------
+         Degree of   Sum of     Mean     F           P
+         Freedom     Squares    Square   Statistic   Value
+------- ----------- ---------- -------- ----------- -------
+ Group    $K-1=2$       64       32       16        0.025
+ 
+ Error    $n-K=3$       6        2
+ 
+ Total    $n-1=5$       70
+----------------------------------------------------------
+
+4. We reject $H_0$ that all the groups A,B,C have the same population mean. We conclude with 97.5% confidence that at least one of A,B,C group has a significantly
+different mean.
+
+
+## Question 4
+
+Nationally, the abuse of methamphetamine has become a concern, not only because of the effects of drug abuse, but also because of the dangers associated with the labs that produce them. A stratified random sample of a total of 16 counties in Iowa (stratified by size of county-small, medium, or large) produced the following ANOVA table relating the number of methamphetamine labs to the size of the county. Use this table to answer the following questions:
+
+--------------------------------------------------
+         Degree of   Sum of    Mean     F
+         Freedom     Squares   Square   Statistic
+------- ----------- --------- -------- -----------
+ Size     $K-1=2$      40.51    20.26     5.17
+ 
+ Error    $n-K=13$     50.96    3.92
+ 
+ Total    $n-1=15$     91.47
+--------------------------------------------------
+
+1. Fill in the values missing from the table above. Show steps.
+
+**Answer:**  
+```{r}
+3.92*13 #SSE=MSE*dfe 
+40.51/2 #MSG=SSG/dfg
+40.51+3.92*13 #SST=SSG+SSE
+20.26/3.92 #F-statistic=MSG/MSE
+```
+
+
+2. What does the mean square for county size tell you?
+
+**Answer:**  The average variability of group effect i.e. the MSG (20.26) (number of meth labs with regard to county size) is large as compared to the average variability of the residuals i.e. the MSE (3.92) (number of meth labs not explained by county size). Hence, the mean square for county size shows that county size may have good explanatory power over the number of meth labs in a county. 
+
+
+3. Find the $P$-value for the $F$-test in the table.
+
+**Answer:**  
+$P-value=0.022$
+
+```{r}
+1-pf(5.17, df1=2, df2=13)
+```
+
+
+4. Describe the hypotheses of the $F$-test. Based on the $P$-value from part 3, give an appropriate conclusion (assume all model assumptions hold).
+
+**Answer:**  The hypotheses are     
+a. the mean of residuals is zero, i.e. $\epsilon=0$.     
+b. $Var(\epsilon)=\sigma^2$ is the same for all groups.     
+c. $\epsilon \sim N(0,\sigma)$.     
+d. Errors are independent of each other.
+
+
+## Question 5
+
+A person's systolic blood pressure can be a signal of serious issues in their cardiovascular system. The dataset `BP.RData` includes the systolic blood pressure and the size of 500 randomly chosen adults. The latter is a categorical variable that takes on the values *Normal*, *Overweight*, and *Obese*. Is the mean systolic blood pressure different for these three groups of people? Conduct an ANOVA $F$ test.
+
+1. Do exploratory data analysis on this dataset (Hint: Lecture 5 Slide 6~9, Lecture 6 15~17).
+2. State the ANOVA model and hypotheses.
+3. Report the mean blood pressure for the whole data set and for each group.
+4. Run the ANOVA model in R and interpret the results.
+5. Check the error assumptions. Is there any violation in assumptions? Is transformation needed? If yes, transform the data and re-do 1~5.
+6. Draw a conclusion.
+
+**Answer:**
+
+1.    
+
+------------------------------------------------------
+ Group       Size       Sample Mean        Sample SD
+----------- ---------- ------------------ ------------
+ Overall     $n=500$   $\bar{y}=145.0$     $s=28.0$
+ 
+ Normal      $n_1=187$ $\bar{y}_1=136.3$   $s_1=27.3$
+ 
+ Overweight  $n_2=109$ $\bar{y}_2=144.4$   $s_2=25.1$
+ 
+ Obese       $n_3=204$ $\bar{y}_2=153.2$   $s_3=27.8$
+------------------------------------------------------    
+     
+From the exploratory data analysis we can see that both the overall and group distributions of bloodpressure roughly follow normal distribution with similar SD, and there seems to be a difference in mean blood pressure according to different weight categories. 
+
+```{r, fig.width=5, fig.height=3}
+# .RData files are input by the load() function.
+load("/home/stat021s18/datasets/BP.RData")
+# Check the name of the dataset just loaded into R
+ls()
+str(BP)
+# Note: sometimes the aggregate() function output won't show up
+# in the Rmd file but it will always show in the knitted pdf file.
+
+mysummary <- function(x){c(number=length(x),mean=mean(x),sd=sd(x))}
+mysummary(BP$BloodPressure)
+aggregate(BloodPressure ~ Size, data=BP, FUN=mysummary)
+
+library(ggplot2) 
+ggplot(data=BP, aes(BloodPressure),stat="count")+ 
+ geom_histogram(binwidth=10)+ 
+ ggtitle("Histogram of Blood Pressure") 
+
+ggplot(data=BP, aes(Size), stat="count")+
+  geom_bar(aes(fill=Size),color="black")+ 
+  scale_fill_brewer()+ 
+  ggtitle("Barplot of Size")
+
+ggplot(data=BP, aes(x=Size, y=BloodPressure))+
+  geom_boxplot(aes(fill=Size))+
+  scale_fill_brewer()+
+  stat_summary(fun.y=mean, geom="point")+
+  ggtitle("Boxplot of Blood Pressure by Size")
+
+ggplot(BP, aes(BloodPressure))+
+  geom_histogram(binwidth=10, aes(fill=Size))+
+  scale_fill_brewer()+
+  facet_grid(Size ~ .)+
+  ggtitle("Histogram of Blood Pressure by Size")
+```
+
+2.       
+ANOVA Model: $Y=\mu+\alpha_k+\epsilon$, where $k=1,2,3$ and $\epsilon \overset{iid}\sim N (0, \sigma)$. $H_0: \alpha_1=\alpha_2=\alpha_3=0$, and $H_a:$ at least one $\alpha_k \neq 0$.The hypotheses are a. the mean of residuals is zero, i.e. $\epsilon=0$. b. $Var(\epsilon)=\sigma^2$ is the same for all groups. c. $\epsilon \sim N(0,\sigma)$. d. Errors are independent of each other.
+
+3. (From table in Qn5.1)      
+
+-------------------------------
+ Group        Sample Mean        
+-----------  ------------------ 
+ Overall      $\bar{y}=145.0$   
+ 
+ Normal       $\bar{y}_1=136.3$   
+ 
+ Overweight  $\bar{y}_2=144.4$ 
+ 
+ Obese        $\bar{y}_2=153.2$   
+--------------------------------
+      
+      
+
+4. The extremely small P-value of the ANOVA test ($P=1.1*10^{-8}<0.05$) suggests that we should reject the null hypothesis and at least one group has a significantly different mean blood pressure than the rest. However, we need to check our assumptions first. 
+
+```{r}
+bpmodel <- aov(BloodPressure ~ Size, data=BP)
+summary(bpmodel)
+```
+
+5. a. $\epsilon=0$ is always fulfilled. b. $Var(\epsilon)=\sigma^2$ is the same for all groups (fulfilled according to the plot which has a similar data spread centered at the line $y=0$). c. $\epsilon \sim N(0,\sigma)$ the normal distribution assumption seems fulfilled, though the data in Q-Q plot show a slightly upward curve. For this reason, I will try a log transform and compare the dot plot and Q-Q plot to see if it can improve the reliability of current ANOVA model. d. Based on research design, errors are independent of each other. 
+
+```{r, fig.width=5, fig.height=3}
+Assess <- data.frame(FittedValues=bpmodel$fitted.values,
+                     Residuals=bpmodel$residuals)
+
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(size=3, color="orange", alpha=0.6)+
+ geom_hline(yintercept=0)+
+ ggtitle("Equal Variance?")
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="orange", alpha=0.6)+
+ geom_abline(intercept=0, slope=1)+
+ ggtitle("Normal Q-Q Plot")
+
+#the followings are testing using natural log transform 
+#to redo 1-5 to see if there will be a better Q-Q plot fit with y=x line
+
+mysummary(log(BP$BloodPressure))
+aggregate(log(BloodPressure) ~ Size, data=BP, FUN=mysummary)
+
+ggplot(data=BP, aes(log(BloodPressure)),stat="count")+ 
+ geom_histogram(binwidth=0.02)+ 
+ ggtitle("Histogram of log-transformed Blood Pressure") 
+
+ggplot(data=BP, aes(Size), stat="count")+
+  geom_bar(aes(fill=Size),color="black")+ 
+  scale_fill_brewer()+ 
+  ggtitle("Barplot of Size")
+
+ggplot(data=BP, aes(x=Size, y=log(BloodPressure)))+
+  geom_boxplot(aes(fill=Size))+
+  scale_fill_brewer()+
+  stat_summary(fun.y=mean, geom="point")+
+  ggtitle("Boxplot of log-transformed Blood Pressure by Size")
+
+ggplot(BP, aes(log(BloodPressure)))+
+  geom_histogram(binwidth=0.02, aes(fill=Size))+
+  scale_fill_brewer()+
+  facet_grid(Size ~ .)+
+  ggtitle("Histogram of log-transformed Blood Pressure by Size")
+
+bpmodel2 <- aov(log(BloodPressure) ~ Size, data=BP)
+summary(bpmodel2)
+
+Assess2 <- data.frame(FittedValues2=bpmodel2$fitted.values,
+                     Residuals2=bpmodel2$residuals)
+
+ggplot(data=Assess2, aes(x=FittedValues2, y=Residuals2))+
+ geom_point(size=3, color="orange", alpha=0.6)+
+ geom_hline(yintercept=0)+
+ ggtitle("Equal Variance for log-transformed data?")
+
+ggplot(data=Assess2, aes(sample = scale(Residuals2)))+
+ stat_qq(size=3, color="orange", alpha=0.6)+
+ geom_abline(intercept=0, slope=1)+
+ ggtitle("Normal Q-Q Plot for log-transformed data")
+
+1-(1.1e-08) #Confidence level
+```
+
+
+After carrying out log-transform, the Q-Q plot of log-transformed data shows greater deviation from the $y=x$ line, and the equal variance assumption is violated as well. Therefore, we **choose to still use the original data without the logarithmic transformation in the ANOVA test.** 
+
+6.  We reject $H_0$ that all group means are the same. There is at least one group among the normal, overweight, and obese groups that has a significantly different mean blood pressure from the rest. And therefore, it is highly likely that body weight affects systolic blood pressure.  
+
+## Question 6
+
+STAT011 students in Fall 2016 and 2017 were asked how many cups of coffee they drank in the previous week. Let's use the ANOVA model to study whether coffee consumption differs by students' class year among those students who drank at least one cup of coffee a week. The two datasets are combined and stored in `/home/stat021s18/datasets/CoffeeClassYear.RData`. Students who did not drink any coffee in the previous week were removed from the analysis.
+
+1. Load the data into R as in Question 5. The name of the dataset is `Survey`. Run the ANOVA model in R and check error assumptions. Transform the response variable and re-run the ANOVA model if any error assumption is not satisfied (Hint: for a distribution skewed to the right, usually we use log or square root transformation; for a left-skewed distribution, try exponentiation or square.).
+
+**Answer:**  
+
+From the dot plot of residuals from the one-way ANOVA model on the original data, we see significantly different spread of residual on two sides of the $y=0$ line, so the equal variance assumption is not fulfilled. Also, normal distribution of error assumption is not fulfilled since the Q-Q plot has an upward curve shape. We therefore try to re-analyze the data with a logarithmic transformation on the original data. 
+
+```{r, fig.width=5, fig.height=3}
+load("/home/stat021s18/datasets/CoffeeClassYear.RData")
+ls()
+
+#exploratory step of original data
+
+mysummary(Survey$Coffee)
+aggregate(Coffee ~ ClassYear, data=Survey, FUN=mysummary)
+
+ggplot(data=Survey, aes(Coffee),stat="count")+ 
+ geom_histogram(binwidth=2)+ 
+ ggtitle("Histogram of Cups of Coffee") 
+
+ggplot(data=Survey, aes(ClassYear), stat="count")+
+  geom_bar(aes(fill=ClassYear),color="black")+ 
+  scale_fill_brewer()+ 
+  ggtitle("Barplot of Class Year")
+
+ggplot(data=Survey, aes(x=ClassYear, y=Coffee))+
+  geom_boxplot(aes(fill=ClassYear))+
+  scale_fill_brewer()+
+  stat_summary(fun.y=mean, geom="point")+
+  ggtitle("Boxplot of Cups of Coffee by Class Year")
+
+ggplot(Survey, aes(Coffee))+
+  geom_histogram(binwidth=2, aes(fill=ClassYear))+
+  scale_fill_brewer()+
+  facet_grid(ClassYear ~ .)+
+  ggtitle("Histogram of Cups of Coffee by Class Year")
+
+coffeemodel <- aov(Coffee ~ ClassYear, data=Survey)
+summary(coffeemodel) 
+
+Assess <- data.frame(FittedValues=coffeemodel$fitted.values,
+                     Residuals=coffeemodel$residuals)
+
+ggplot(data=Assess, aes(x=FittedValues, y=Residuals))+
+ geom_point(size=3, color="orange", alpha=0.6)+
+ geom_hline(yintercept=0)+
+ ggtitle("Equal Variance?")
+
+ggplot(data=Assess, aes(sample = scale(Residuals)))+
+ stat_qq(size=3, color="orange", alpha=0.6)+
+ geom_abline(intercept=0, slope=1)+
+ ggtitle("Normal Q-Q Plot")
+
+#The following shows one-way ANOVA test after logarithmic
+#transformation of the data.
+
+mysummary(log(Survey$Coffee))
+aggregate(log(Coffee) ~ ClassYear, data=Survey, FUN=mysummary)
+
+ggplot(data=Survey, aes(log(Coffee)),stat="count")+ 
+ geom_histogram(binwidth=0.5)+ 
+ ggtitle("Histogram of log-transformed Cups of Coffee") 
+
+ggplot(data=Survey, aes(ClassYear), stat="count")+
+  geom_bar(aes(fill=ClassYear),color="black")+ 
+  scale_fill_brewer()+ 
+  ggtitle("Barplot of Class Year")
+
+ggplot(data=Survey, aes(x=ClassYear, y=log(Coffee)))+
+  geom_boxplot(aes(fill=ClassYear))+
+  scale_fill_brewer()+
+  stat_summary(fun.y=mean, geom="point")+
+  ggtitle("Boxplot of log-transformed Cups of Coffee by Class Year")
+
+ggplot(Survey, aes(log(Coffee)))+
+  geom_histogram(binwidth=0.5, aes(fill=ClassYear))+
+  scale_fill_brewer()+
+  facet_grid(ClassYear ~ .)+
+  ggtitle("Histogram of log-transformed Cups of Coffee by Class Year")
+
+coffeemodel2 <- aov(log(Coffee) ~ ClassYear, data=Survey)
+summary(coffeemodel2)
+
+Assess2 <- data.frame(FittedValues2=coffeemodel2$fitted.values,
+                     Residuals2=coffeemodel2$residuals)
+
+ggplot(data=Assess2, aes(x=FittedValues2, y=Residuals2))+
+ geom_point(size=3, color="orange", alpha=0.6)+
+ geom_hline(yintercept=0)+
+ ggtitle("Equal Variance for log-transformed data?")
+
+ggplot(data=Assess2, aes(sample = scale(Residuals2)))+
+ stat_qq(size=3, color="orange", alpha=0.6)+
+ geom_abline(intercept=0, slope=1)+
+ ggtitle("Normal Q-Q Plot for log-transformed data")
+
+```
+
+After logarithmically transforming the original data, we see that both equal variance and normal distribution of residuals/errors assumptions are fulfilled. The $\epsilon=0$ assumption is always fulfilled and we know from data collection process that the independence assumption is fulfilled. Therefore, we can trust the P-value generated by doing a one-way ANOVA test on the log transformed data. 
+
+2. Draw a conclusion on your analysis. 
+
+Based on $P-value=0.35>0.05$, we can reject the alternative hypothesis and conclude that there is not a significant difference in mean cups of coffee consumed by students of different class years, though we may not generalize the conclusion to the entire college or college students in general, since the data collection process is not random (all students taking STAT011). 
+
+
+## Save and submit your work
+
+To save your homework and upload it to Moodle, do the following:
+
+1. In the Home folder (lower right panel), find the file named `Homework_3.pdf`.
+2. Check the file and click the `More` button at the top of the lower right panel.
+3. Choose `Export` to download the file.
+4. Upload it to Moodle as your homework submission.
