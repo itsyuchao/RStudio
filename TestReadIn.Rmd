@@ -17,17 +17,23 @@ EmoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_
 EmoDM <- EmoDM[-c(1:8),]
 
 
+#-------------------------------------------------------
 TempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",")
-sum(TempDM[8,] != "")
-TempDM <- TempDM[-c(9:13),]
+TempDM <- TempDM[-c(9:13),] #manually getting rid of survey preview results - sorry
 TempDM[] <- lapply(TempDM, as.character) #set data type from factor to character
-TempDM <- as.matrix(TempDM) 
+TempDM <- as.data.frame(TempDM) 
 TempDM <- t(TempDM) 
-colnames(TempDM) <- TempDM[1, ]
-TempDM <- TempDM[-1,]
-TempDM <- as.data.frame(TempDM)
+colnames(TempDM) <- TempDM[1, ] 
+TempDM <- TempDM[-1, ]
+TempDM <- as.data.frame(TempDM) #data type somehow converted to matrix after transpose - force back into data frame for "gather"
 TempDM <- gather(TempDM, "qnNum", "word", 1:8)
-TempDM <- TempDM[!(TempDM$word == ""), ]
-TempDM <- TempDM[, c("word","qnNum")]
+TempDM <- TempDM[!(TempDM$word == ""), ] 
+TempDM <- TempDM[ , c("word","qnNum")]
+#-------------------------------------------------------
+ResultDM <- TempDM
+totalWord <- as.numeric(nrow(ResultDM)) 
+
+
+
 
 ```
