@@ -12,10 +12,10 @@ library(tidyr)
 
 ```{r, echo = FALSE}
 #This chunk prepares the list of words 
-#EmoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", header=TRUE, sep=",")
+EmoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", header=TRUE, sep=",")
 #str(EmoDM)
-#EmoDM <- EmoDM[-c(1:10),]
-#write.csv(EmoDM, file = "forSeparationIntoColumns.csv")
+EmoDM <- EmoDM[-c(1:8),]
+
 
 TempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",")
 sum(TempDM[8,] != "")
@@ -28,6 +28,6 @@ TempDM <- TempDM[-1,]
 TempDM <- as.data.frame(TempDM)
 TempDM <- gather(TempDM, "qnNum", "word", 1:8)
 TempDM <- TempDM[!(TempDM$word == ""), ]
-
+TempDM <- TempDM[, c("word","qnNum")]
 
 ```
