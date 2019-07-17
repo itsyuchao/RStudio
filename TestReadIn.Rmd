@@ -12,28 +12,64 @@ library(tidyr)
 
 ```{r, echo = FALSE}
 #This chunk prepares the list of words 
-EmoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", header=TRUE, sep=",")
-#str(EmoDM)
-EmoDM <- EmoDM[-c(1:8),]
+emoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", 
+                  header = TRUE, sep = ",", stringsAsFactors = FALSE)
+emoDM <- emoDM[-c(1:8),] #manually getting rid of survey preview results
 
 
 #-------------------------------------------------------
-TempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",")
-TempDM <- TempDM[-c(9:13),] #manually getting rid of survey preview results - sorry
-TempDM[] <- lapply(TempDM, as.character) #set data type from factor to character
-TempDM <- as.data.frame(TempDM) 
-TempDM <- t(TempDM) 
-colnames(TempDM) <- TempDM[1, ] 
-TempDM <- TempDM[-1, ]
-TempDM <- as.data.frame(TempDM) #data type somehow converted to matrix after transpose - force back into data frame for "gather"
-TempDM <- gather(TempDM, "qnNum", "word", 1:8)
-TempDM <- TempDM[!(TempDM$word == ""), ] 
-TempDM <- TempDM[ , c("word","qnNum")]
-#-------------------------------------------------------
-ResultDM <- TempDM
-totalWord <- as.numeric(nrow(ResultDM)) 
+tempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",", stringsAsFactors = FALSE)
+tempDM <- tempDM[-c(9:13), ] #getting rid of some leftover data
+tempDM <- t(tempDM) 
+colnames(tempDM) <- tempDM[1, ] 
+tempDM <- tempDM[-1, ]
+tempDM <- as.data.frame(tempDM) #data type converted to matrix after transpose, due to rectangular shape - force back into data frame for "gather"
+tempDM <- gather(tempDM, "qnNum", "word", 1:8)
+tempDM <- tempDM[!(tempDM$word == ""), ] 
+tempDM <- tempDM[ , c("word","qnNum")]
+tempDM$qnNum <- as.factor(tempDM$qnNum)
+tempDM$qnNum <- factor(tempDM$qnNum, levels = c("3.1","5.1","7.1","9.1","11.1","13.1","15.1","17.1"))
+#str(TempDM)
+qnDM <- levels(tempDM$qnNum)
+
+#-------------------------------------------------------    
+
+totalParticipant <- nrow(emoDM)
+totalWord <- nrow(tempDM)
+resultDM <- tempDM
 
 
+for (indexResponse in 1:totalParticipant) {
+  for (indexWord in 1:totalWord) {
+    searchWord <- tempDM[indexWord,1]
+    searchQn <- tempDM[indexWord,2]
+    resultCol <- indexResponse+2
+    resultDM[indexWord,resultCol] <- NA #initialize a new column
+      for (possibleRating in 1:7) {
+        if (!is.na(resultDM[indexWord,resultCol])) {
+          break
+        }
+        currentColName <- paste ("Q", searchQn, "_", possibleRating, sep = "", collapse = NULL)
+        if (grepl(searchWord, emoDM[indexResponse,currentColName], fixed = TRUE)) {
+            resultDM[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
+        }
+        else {
+          if ((possibleRating == 7) & (is.na(resultDM[indexWord,resultCol]))) {
+            resultDM[indexWord,resultCol] <- 0
+          }
+        }
+      }
+  }
+}
 
 
+#q2 <- rownames(resultDM[resultDM$qnNum == qnDM[2], ])
+
+
+ResultDM[1,1]
+
+
+#loop over all participants 
+  #loop over all words 
+    #find the character string in the question number 
 ```
