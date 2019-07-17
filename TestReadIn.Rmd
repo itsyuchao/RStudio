@@ -62,14 +62,6 @@ for (indexResponse in 1:totalParticipant) {
   }
 }
 
-
 #q2 <- rownames(resultDM[resultDM$qnNum == qnDM[2], ])
 
-
-ResultDM[1,1]
-
-
-#loop over all participants 
-  #loop over all words 
-    #find the character string in the question number 
 ```
