@@ -1,7 +1,7 @@
 ---
-title: "TestReadIn"
+title: "Qualtrics Read In Pipeline"
 author: "Yuchao Wang"
-date: "7/11/2019"
+date: "8/19/2019"
 output: html_document
 ---
 
@@ -11,57 +11,85 @@ library(tidyr)
 ```
 
 ```{r, echo = FALSE}
-#This chunk prepares the list of words 
-emoDM <- read.csv(file="thesis/Verhalen_Emotional Arousal_De Muur_July 11, 2019_13.08.csv", 
-                  header = TRUE, sep = ",", stringsAsFactors = FALSE)
-emoDM <- emoDM[-c(1:8),] #manually getting rid of survey preview results
-
-
 #-------------------------------------------------------
-tempDM <- read.csv(file = "forSeparationIntoColumns.csv", header = F, sep = ",", stringsAsFactors = FALSE)
-tempDM <- tempDM[-c(9:13), ] #getting rid of some leftover data
-tempDM <- t(tempDM) 
-colnames(tempDM) <- tempDM[1, ] 
-tempDM <- tempDM[-1, ]
-tempDM <- as.data.frame(tempDM) #data type converted to matrix after transpose, due to rectangular shape - force back into data frame for "gather"
-tempDM <- gather(tempDM, "qnNum", "word", 1:8)
-tempDM <- tempDM[!(tempDM$word == ""), ] 
-tempDM <- tempDM[ , c("word","qnNum")]
-tempDM$qnNum <- as.factor(tempDM$qnNum)
-tempDM$qnNum <- factor(tempDM$qnNum, levels = c("3.1","5.1","7.1","9.1","11.1","13.1","15.1","17.1"))
-#str(TempDM)
-qnDM <- levels(tempDM$qnNum)
+template <- read.csv(file = "forWordSeparation_cleaned.csv", header = F, sep = ",", stringsAsFactors = FALSE)
+template <- t(template) 
+colnames(template) <- template[1, ] 
+template <- template[-1, ]
+template <- as.data.frame(template) #data type converted to matrix after transpose, due to rectangular shape - force back into data frame for "gather"
+template <- gather(template, "qnLabel", "word", 1:17)
+template <- template[!(template$word == ""), ] 
+template <- template[ , c("word","qnLabel")]
+template$qnLabel <- trimws(template$qnLabel)
+template$qnLabel <- as.factor(template$qnLabel)
+template$qnLabel <- factor(template$qnLabel, levels = c("3.1","5.1","7.1","9.1","11.1","13.1","15.1","17.1","19.1","24.1","26.1","28.1","30.1","32.1","34.1","36.1","38.1")) 
+qnLabel <- levels(template$qnLabel)
 
 #-------------------------------------------------------    
+emoResult <- read.csv(file="thesis/Verhalen_Emotional+Arousal_August+16%2C+2019_09.21.csv", 
+                  header = TRUE, sep = ",", stringsAsFactors = FALSE)
+emoResult <- emoResult[-c(1,2), ]
 
-totalParticipant <- nrow(emoDM)
-totalWord <- nrow(tempDM)
-resultDM <- tempDM
+
+totalParticipant <- nrow(emoResult)
+totalWord <- nrow(template)
+emoResultClean <- template
 
 
 for (indexResponse in 1:totalParticipant) {
   for (indexWord in 1:totalWord) {
-    searchWord <- tempDM[indexWord,1]
-    searchQn <- tempDM[indexWord,2]
+    searchWord <- template[indexWord,1]
+    searchQn <- template[indexWord,2]
     resultCol <- indexResponse+2
-    resultDM[indexWord,resultCol] <- NA #initialize a new column
+    emoResultClean[indexWord,resultCol] <- NA #initialize a new column
       for (possibleRating in 1:7) {
-        if (!is.na(resultDM[indexWord,resultCol])) {
+        if (!is.na(emoResultClean[indexWord,resultCol])) {
           break
         }
         currentColName <- paste ("Q", searchQn, "_", possibleRating, sep = "", collapse = NULL)
-        if (grepl(searchWord, emoDM[indexResponse,currentColName], fixed = TRUE)) {
-            resultDM[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
+        if (grepl(searchWord, emoResult[indexResponse,currentColName], fixed = TRUE)) {
+            emoResultClean[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
         }
         else {
-          if ((possibleRating == 7) & (is.na(resultDM[indexWord,resultCol]))) {
-            resultDM[indexWord,resultCol] <- 0
+          if ((possibleRating == 7) & (is.na(emoResultClean[indexWord,resultCol]))) {
+            emoResultClean[indexWord,resultCol] <- 0
           }
         }
       }
   }
 }
 
-#q2 <- rownames(resultDM[resultDM$qnNum == qnDM[2], ])
+#------------------------------------------------------- 
+litResult <- read.csv(file="thesis/Verhalen_Literariness_August+16%2C+2019_09.12.csv", 
+                  header = TRUE, sep = ",", stringsAsFactors = FALSE)
+litResult <- litResult[-c(1,2), ]
 
+
+totalParticipant <- nrow(litResult)
+totalWord <- nrow(template)
+litResultClean <- template
+
+
+for (indexResponse in 1:totalParticipant) {
+  for (indexWord in 1:totalWord) {
+    searchWord <- template[indexWord,1]
+    searchQn <- template[indexWord,2]
+    resultCol <- indexResponse+2
+    litResultClean[indexWord,resultCol] <- NA #initialize a new column
+      for (possibleRating in 1:2) {
+        if (!is.na(litResultClean[indexWord,resultCol])) {
+          break
+        }
+        currentColName <- paste ("Q", searchQn, "_", possibleRating, sep = "", collapse = NULL)
+        if (grepl(searchWord, litResult[indexResponse,currentColName], fixed = TRUE)) {
+            litResultClean[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
+        }
+        else {
+          if ((possibleRating == 2) & (is.na(litResultClean[indexWord,resultCol]))) {
+            litResultClean[indexWord,resultCol] <- 0
+          }
+        }
+      }
+  }
+}
 ```
