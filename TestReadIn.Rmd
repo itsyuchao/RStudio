@@ -52,7 +52,7 @@ for (indexResponse in 1:totalParticipant) {
         }
         else {
           if ((possibleRating == 7) & (is.na(emoResultClean[indexWord,resultCol]))) {
-            emoResultClean[indexWord,resultCol] <- 0
+            emoResultClean[indexWord,resultCol] <- NA
           }
         }
       }
@@ -86,10 +86,16 @@ for (indexResponse in 1:totalParticipant) {
         }
         else {
           if ((possibleRating == 2) & (is.na(litResultClean[indexWord,resultCol]))) {
-            litResultClean[indexWord,resultCol] <- 0
+            litResultClean[indexWord,resultCol] <- NA
           }
         }
       }
   }
 }
+
+#------------------------------------------------------- 
+saveRDS(emoResultClean, file = "emoResultClean.rds")
+saveRDS(litResultClean, file = "litResultClean.rds")
+saveRDS(template, file = "template.rds")
+
 ```

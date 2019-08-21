@@ -1,0 +1,26 @@
+---
+title: "MatchTiming"
+author: "Yuchao Wang"
+date: "8/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readtext)
+```
+
+```{r pressure, echo=FALSE}
+emoResultClean <- readRDS("emoResultClean.rds")
+
+colLabel <- c("Word", "Onset", "Duration")
+DHO <- read.delim("thesis/De Hond_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DHO <- DHO[-c(1,2,3), ]
+colnames(DHO) <- colLabel
+DMO <- read.delim("thesis/De Muur_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DMO <- DMO[-c(1,2), ]
+colnames(DMO) <- colLabel
+
+
+
+```
