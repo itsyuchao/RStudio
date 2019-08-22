@@ -16,10 +16,20 @@ colLabel <- c("Word", "Onset", "Duration")
 DHO <- read.delim("thesis/De Hond_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DHO <- DHO[-c(1,2,3), ]
 colnames(DHO) <- colLabel
+
 DMO <- read.delim("thesis/De Muur_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DMO <- DMO[-c(1,2), ]
 colnames(DMO) <- colLabel
 
 
+colNum <- ncol(emoResultClean)
+for (index in 1:1238) {
+  if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
+    emoResultClean[index, c(colNum+1, colNum+2)] <- DHO[index, c(2,3)]
+  }
+  else {
+    emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+  }
+}
 
 ```
