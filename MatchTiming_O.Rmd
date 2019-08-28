@@ -13,23 +13,32 @@ knitr::opts_chunk$set(echo = TRUE)
 emoResultClean <- readRDS("emoResultClean.rds")
 
 colLabel <- c("Word", "Onset", "Duration")
-DHO <- read.delim("thesis/De Hond_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DHO <- read.delim("thesis/De Hond_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DHO <- DHO[-c(1,2,3), ]
 colnames(DHO) <- colLabel
 
-DMO <- read.delim("thesis/De Muur_O copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DMO <- read.delim("thesis/De Muur_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DMO <- DMO[-c(1,2), ]
 colnames(DMO) <- colLabel
 
 
 colNum <- ncol(emoResultClean)
-for (index in 1:1238) {
-  if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
+for (index in 1:1237) {
+  #if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
     emoResultClean[index, c(colNum+1, colNum+2)] <- DHO[index, c(2,3)]
-  }
-  else {
-    emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
-  }
+  #}
+  #else {
+  #  emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+  #}
+}
+
+for (index in 1:1117) {
+  #if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
+    emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- DMO[index, c(2,3)]
+  #}
+  #else {
+  #  emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+  #}
 }
 
 ```
