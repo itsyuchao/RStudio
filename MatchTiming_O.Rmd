@@ -24,21 +24,21 @@ colnames(DMO) <- colLabel
 
 colNum <- ncol(emoResultClean)
 for (index in 1:1237) {
-  #if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
+  if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
     emoResultClean[index, c(colNum+1, colNum+2)] <- DHO[index, c(2,3)]
-  #}
-  #else {
-  #  emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
-  #}
+  }
+  else {
+    emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+  }
 }
 
 for (index in 1:1117) {
-  #if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
+  if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
     emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- DMO[index, c(2,3)]
-  #}
-  #else {
-  #  emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
-  #}
+  }
+  else {
+    emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+  }
 }
 
 ```

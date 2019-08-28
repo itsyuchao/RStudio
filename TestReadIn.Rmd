@@ -1,5 +1,5 @@
 ---
-title: "Qualtrics Read In Pipeline"
+title: "Ratings matching original words"
 author: "Yuchao Wang"
 date: "8/19/2019"
 output: html_document
