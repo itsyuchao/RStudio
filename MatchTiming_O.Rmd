@@ -13,11 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 emoResultClean <- readRDS("emoResultClean.rds")
 
 colLabel <- c("Word", "Onset", "Duration")
-DHO <- read.delim("thesis/De Hond_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DHO <- read.delim("thesis/De Hond_2V_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DHO <- DHO[-c(1,2,3), ]
 colnames(DHO) <- colLabel
 
-DMO <- read.delim("thesis/De Muur_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DMO <- read.delim("thesis/De Muur_2V copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DMO <- DMO[-c(1,2), ]
 colnames(DMO) <- colLabel
 
@@ -32,7 +32,7 @@ for (index in 1:1237) {
   }
 }
 
-for (index in 1:1117) {
+for (index in 1:1116) {
   if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
     emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- DMO[index, c(2,3)]
   }
