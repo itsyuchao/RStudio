@@ -126,14 +126,102 @@ for (index in 1:1117) {
 
 
 #WRITE OUTPUT FILES
-cnt <= 1
+emoDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
+emoDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
+emoDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
+emoDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
+litDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
+litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
+litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
+litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
+
+#EMO
+  #Original Versions
 for (index in 1:1237) {
-  if (emoOGwTiming[index, colNumEmo+2] == "mismatch") | (emoOGwTiming[index, colNumEmo+2] == "0") {
-    
+  if ((emoOGwTiming[index, colNumEmo+2] == "mismatch") | (emoOGwTiming[index, colNumEmo+2] == "0")) {
+    next
+  }
+  else {
+    emoDHOFinal <- rbind(emoDHOFinal, emoOGwTiming[index, ])
   }
 }
+write.csv(emoDHOFinal, file = "thesis/emoDHOFinal.csv")
 
-write.csv()
+
+for (index in 1:1117) {
+  if ((emoOGwTiming[index+1237, colNumEmo+2] == "mismatch") | (emoOGwTiming[index+1237, colNumEmo+2] == "0")) {
+    next
+  }
+  else {
+    emoDMOFinal <- rbind(emoDMOFinal, emoOGwTiming[index, ])
+  }
+}
+write.csv(emoDMOFinal, file = "thesis/emoDMOFinal.csv")
+
+  #2V(third pers perspec)
+for (index in 1:1237) {
+  if ((emo2VwTiming[index, colNumEmo+2] == "mismatch") | (emo2VwTiming[index, colNumEmo+2] == "0")) {
+    next
+  }
+  else {
+    emoDH2VFinal <- rbind(emoDH2VFinal, emo2VwTiming[index, ])
+  }
+}
+write.csv(emoDH2VFinal, file = "thesis/emoDH2VFinal.csv")
+
+for (index in 1:1117) {
+  if ((emo2VwTiming[index+1237, colNumEmo+2] == "mismatch") | (emo2VwTiming[index+1237, colNumEmo+2] == "0")) {
+    next
+  }
+  else {
+    emoDM2VFinal <- rbind(emoDM2VFinal, emo2VwTiming[index, ])
+  }
+}
+write.csv(emoDM2VFinal, file = "thesis/emoDM2VFinal.csv")
+
+#LIT
+  #Original Versions
+for (index in 1:1237) {
+  if ((litOGwTiming[index, colNumLit+2] == "mismatch") | (litOGwTiming[index, colNumLit+2] == "0")) {
+    next
+  }
+  else {
+    litDHOFinal <- rbind(litDHOFinal, litOGwTiming[index, ])
+  }
+}
+write.csv(litDHOFinal, file = "thesis/litDHOFinal.csv")
+
+
+for (index in 1:1117) {
+  if ((litOGwTiming[index+1237, colNumLit+2] == "mismatch") | (litOGwTiming[index+1237, colNumLit+2] == "0")) {
+    next
+  }
+  else {
+    litDMOFinal <- rbind(litDMOFinal, litOGwTiming[index, ])
+  }
+}
+write.csv(litDMOFinal, file = "thesis/litDMOFinal.csv")
+
+  #2V(third pers perspec)
+for (index in 1:1237) {
+  if ((lit2VwTiming[index, colNumLit+2] == "mismatch") | (lit2VwTiming[index, colNumLit+2] == "0")) {
+    next
+  }
+  else {
+    litDH2VFinal <- rbind(litDH2VFinal, lit2VwTiming[index, ])
+  }
+}
+write.csv(litDH2VFinal, file = "thesis/litDH2VFinal.csv")
+
+for (index in 1:1117) {
+  if ((lit2VwTiming[index+1237, colNumLit+2] == "mismatch") | (lit2VwTiming[index+1237, colNumLit+2] == "0")) {
+    next
+  }
+  else {
+    litDM2VFinal <- rbind(litDM2VFinal, lit2VwTiming[index, ])
+  }
+}
+write.csv(litDM2VFinal, file = "thesis/litDM2VFinal.csv")
 
 
 ```
