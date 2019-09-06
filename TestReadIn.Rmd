@@ -26,9 +26,10 @@ template$qnLabel <- factor(template$qnLabel, levels = c("3.1","5.1","7.1","9.1",
 qnLabel <- levels(template$qnLabel)
 
 #-------------------------------------------------------    
-emoResult <- read.csv(file="thesis/Verhalen_Emotional+Arousal_August+16%2C+2019_09.21.csv", 
+emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+6%2C+2019_08.37.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
-emoResult <- emoResult[-c(1,2), ]
+emoResult <- emoResult[-c(1,2), ] #get rid of title row
+emoResult <- emoResult[-c(1:9), ] #get rid of preview Test results
 
 
 totalParticipant <- nrow(emoResult)
@@ -60,9 +61,10 @@ for (indexResponse in 1:totalParticipant) {
 }
 
 #------------------------------------------------------- 
-litResult <- read.csv(file="thesis/Verhalen_Literariness_August+16%2C+2019_09.12.csv", 
+litResult <- read.csv(file="Verhalen_Literariness_September+5%2C+2019_11.49.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
-litResult <- litResult[-c(1,2), ]
+litResult <- litResult[-c(1,2), ] #get rid of title row
+litResult <- litResult[-c(1:10), ] #get rid of preview Test results
 
 
 totalParticipant <- nrow(litResult)
