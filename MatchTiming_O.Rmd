@@ -10,35 +10,130 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r pressure, echo=FALSE}
-emoResultClean <- readRDS("emoResultClean.rds")
 
+#READ IN ALL 4 ADJUSTED PRAAT WORD ONSETS AND DURATIONS
 colLabel <- c("Word", "Onset", "Duration")
-DHO <- read.delim("thesis/De Hond_2V_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
-DHO <- DHO[-c(1,2,3), ]
+DHO <- read.delim("thesis/De Hond_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DHO <- DHO[-c(1:3), ] #get rid of title
 colnames(DHO) <- colLabel
 
-DMO <- read.delim("thesis/De Muur_2V copy.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
-DMO <- DMO[-c(1,2), ]
+DMO <- read.delim("thesis/De Muur_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DMO <- DMO[-c(1,2), ] #get rid of title
 colnames(DMO) <- colLabel
 
+DH2V <- read.delim("thesis/De Hond_2V_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DH2V <- DH2V[-c(1:3), ] #get rid of title
+colnames(DH2V) <- colLabel
 
-colNum <- ncol(emoResultClean)
+DM2V <- read.delim("thesis/De Muur_2V_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
+DM2V <- DM2V[-c(1,2), ] #get rid of title
+colnames(DM2V) <- colLabel
+#--------------------------------------------------
+
+#MATCH, FOR ORIGINAL(FIRST PERSON PERSPEC), THE TIMING WITH RATED WORDS
+
+#SETUP 
+emoResultClean <- readRDS("emoResultClean.rds")
+litResultClean <- readRDS("litResultClean.rds")
+
+colNumEmo <- ncol(emoResultClean)
+colNumLit <- ncol(litResultClean)
+
+emoOGwTiming <- emoResultClean
+emo2VwTiming <- emoResultClean
+litOGwTiming <- litResultClean
+lit2VwTiming <- litResultClean
+
+  #EMO
 for (index in 1:1237) {
   if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
-    emoResultClean[index, c(colNum+1, colNum+2)] <- DHO[index, c(2,3)]
+    emoOGwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- DHO[index, c(2,3)]
   }
   else {
-    emoResultClean[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+    emoOGwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
   }
 }
 
 for (index in 1:1117) {
   if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
-    emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- DMO[index, c(2,3)]
+    emoOGwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- DMO[index, c(2,3)]
   }
   else {
-    emoResultClean[index + 1237, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+    emoOGwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
   }
 }
+
+  #LIT
+for (index in 1:1237) {
+  if (grepl(DHO[index,1], litResultClean[index,1], fixed = TRUE)) {
+    litOGwTiming[index, c(colNumLit+1, colNumLit+2)] <- DHO[index, c(2,3)]
+  }
+  else {
+    litOGwTiming[index, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
+  }
+}
+
+for (index in 1:1117) {
+  if (grepl(DMO[index,1], litResultClean[index + 1237,1], fixed = TRUE)) {
+    litOGwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- DMO[index, c(2,3)]
+  }
+  else {
+    litOGwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
+  }
+}
+#-------------------------------------------------- 
+
+
+#MATCH, FOR 2V(THIRD PERSON PERSPEC), THE TIMING WITH RATED WORDS
+  #EMO
+for (index in 1:1237) {
+  if (grepl(DH2V[index,1], emoResultClean[index,1], fixed = TRUE)) {
+    emo2VwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- DH2V[index, c(2,3)]
+  }
+  else {
+    emo2VwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
+  }
+}
+
+for (index in 1:1117) {
+  if (grepl(DM2V[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
+    emo2VwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- DM2V[index, c(2,3)]
+  }
+  else {
+    emo2VwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
+  }
+}
+
+  #LIT
+for (index in 1:1237) {
+  if (grepl(DH2V[index,1], litResultClean[index,1], fixed = TRUE)) {
+    lit2VwTiming[index, c(colNumLit+1, colNumLit+2)] <- DH2V[index, c(2,3)]
+  }
+  else {
+    lit2VwTiming[index, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
+  }
+}
+
+for (index in 1:1117) {
+  if (grepl(DM2V[index,1], litResultClean[index + 1237,1], fixed = TRUE)) {
+    lit2VwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- DM2V[index, c(2,3)]
+  }
+  else {
+    lit2VwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
+  }
+}
+#-------------------------------------------------- 
+
+
+#WRITE OUTPUT FILES
+cnt <= 1
+for (index in 1:1237) {
+  if (emoOGwTiming[index, colNumEmo+2] == "mismatch") | (emoOGwTiming[index, colNumEmo+2] == "0") {
+    
+  }
+}
+
+write.csv()
+
 
 ```
