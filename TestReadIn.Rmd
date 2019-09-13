@@ -116,10 +116,8 @@ dodge <- position_dodge(width = 0.9)
 limits <- aes(ymax = emoTrend$mean + emoTrend$se,
               ymin = emoTrend$mean - emoTrend$se)
 
-p <- ggplot(data = emoTrend, aes(x = vars, y = mean, color = vars))
-
-p + geom_point(size=2.5, alpha=0.6, color = "orange") +
-  
+ggplot(data = emoTrend, aes(x = vars, y = mean, color = vars)) + 
+  geom_point(size=2.5, alpha=0.6, color = "orange") +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
@@ -132,10 +130,8 @@ dodge <- position_dodge(width = 0.9)
 limits <- aes(ymax = litTrend$mean + litTrend$se,
               ymin = litTrend$mean - litTrend$se)
 
-p <- ggplot(data = litTrend, aes(x = vars, y = mean, color = vars))
-
-p + geom_point(size=2.5, alpha=0.6, color = "orange") +
-  
+ggplot(data = litTrend, aes(x = vars, y = mean, color = vars)) + 
+  geom_point(size=2.5, alpha=0.6, color = "orange") +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
