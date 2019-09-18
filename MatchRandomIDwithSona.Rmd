@@ -8,8 +8,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-lit911 <- lit911[-c(3:13),-c(3:307)]
-emo911 <- emo911[-c(3:12), -c(3:392)]
-write_csv(emo911, path = "EmotionSurvey9_11.csv")
-write_csv(lit911, path = "LiterarinessSurvey9_11.csv")
+lit917 <- lit917[-c(3:13),-c(3:307)]
+emo917 <- emo917[-c(3:12), -c(3:392)]
+emo917 <- emo917[-c(17:19),]
+write_csv(emo917, path = "EmotionSurvey9_17.csv")
+write_csv(lit917, path = "LiterarinessSurvey9_17.csv")
 ```

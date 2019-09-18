@@ -27,10 +27,11 @@ qnLabel <- levels(template$qnLabel)
 #------------------------------------------------------- 
 
 #MATCH EMO RESULTS    
-emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+11%2C+2019_06.01.csv", 
+emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+17%2C+2019_12.42.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 emoResult <- emoResult[-c(1,2), ] #get rid of title row
 emoResult <- emoResult[-c(1:9), ] #get rid of preview Test results
+emoResult <- emoResult[-c(15:17), ] #get rid of incomplete results
 
 
 totalParticipant <- nrow(emoResult)
@@ -64,7 +65,7 @@ for (indexResponse in 1:totalParticipant) {
 #------------------------------------------------------- 
 
 #MATCH LIT RESULTS
-litResult <- read.csv(file="Verhalen_Literariness_September+11%2C+2019_06.01.csv", 
+litResult <- read.csv(file="Verhalen_Literariness_September+17%2C+2019_12.43.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 litResult <- litResult[-c(1,2), ] #get rid of title row
 litResult <- litResult[-c(1:10), ] #get rid of preview Test results
@@ -109,8 +110,10 @@ saveRDS(template, file = "template.rds")
 #Visualize ratings 
 library(ggplot2)
 library(psych)
+#EMO
 temoResultClean <- t(emoResultClean)
 temoResultClean <- temoResultClean[-c(1:2),]
+
 emoTrend <- describe(temoResultClean)
 dodge <- position_dodge(width = 0.9)
 limits <- aes(ymax = emoTrend$mean + emoTrend$se,
@@ -121,8 +124,9 @@ ggplot(data = emoTrend, aes(x = vars, y = mean, color = vars)) +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
-  ggtitle("Emotion Rating (De Muur + De Hond concatenated), N=13")
+  ggtitle("Emotion Rating (De Muur + De Hond concatenated), N=20")
 
+#LIT
 tlitResultClean <- t(litResultClean)
 tlitResultClean <- tlitResultClean[-c(1:2),]
 litTrend <- describe(tlitResultClean)
@@ -135,6 +139,6 @@ ggplot(data = litTrend, aes(x = vars, y = mean, color = vars)) +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
-  ggtitle("Literariness Rating (De Muur + De Hond concatenated), N=16")
+  ggtitle("Literariness Rating (De Muur + De Hond concatenated), N=21")
 
 ```
