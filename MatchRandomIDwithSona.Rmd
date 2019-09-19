@@ -8,9 +8,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-lit917 <- lit917[-c(3:13),-c(3:307)]
-emo917 <- emo917[-c(3:12), -c(3:392)]
-emo917 <- emo917[-c(17:19),]
-write_csv(emo917, path = "EmotionSurvey9_17.csv")
-write_csv(lit917, path = "LiterarinessSurvey9_17.csv")
+library(readr)
+emo919 <- read_csv("~/Downloads/Verhalen_Emotional+Arousal_September+19%2C+2019_11.04.csv", 
+    col_names = FALSE)
+
+lit919 <- read_csv("~/Downloads/Verhalen_Literariness_September+19%2C+2019_11.04.csv", 
+    col_names = FALSE)
+
+
+lit919 <- lit919[-c(3:13),-c(3:307)]
+emo919 <- emo919[-c(3:12), -c(3:392)]
+emo919 <- emo919[-c(17:19),]
+write_csv(emo919, path = "EmotionSurvey9_19.csv")
+write_csv(lit919, path = "LiterarinessSurvey9_19.csv")
 ```
