@@ -27,7 +27,7 @@ qnLabel <- levels(template$qnLabel)
 #------------------------------------------------------- 
 
 #MATCH EMO RESULTS    
-emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+17%2C+2019_12.42.csv", 
+emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+23%2C+2019_08.47.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 emoResult <- emoResult[-c(1,2), ] #get rid of title row
 emoResult <- emoResult[-c(1:9), ] #get rid of preview Test results
@@ -65,7 +65,7 @@ for (indexResponse in 1:totalParticipant) {
 #------------------------------------------------------- 
 
 #MATCH LIT RESULTS
-litResult <- read.csv(file="Verhalen_Literariness_September+17%2C+2019_12.43.csv", 
+litResult <- read.csv(file="Verhalen_Literariness_September+23%2C+2019_08.46.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 litResult <- litResult[-c(1,2), ] #get rid of title row
 litResult <- litResult[-c(1:10), ] #get rid of preview Test results
@@ -115,21 +115,75 @@ temoResultClean <- t(emoResultClean)
 temoResultClean <- temoResultClean[-c(1:2),]
 
 emoTrend <- describe(temoResultClean)
-dodge <- position_dodge(width = 0.9)
-limits <- aes(ymax = emoTrend$mean + emoTrend$se,
-              ymin = emoTrend$mean - emoTrend$se)
+emoDMTrend <- emoTrend[c(1:1237),]
+emoDHTrend <- emoTrend[c(1238:2354),]
+emoDHTrend$vars <- seq(length=nrow(emoDHTrend)) 
 
-ggplot(data = emoTrend, aes(x = vars, y = mean, color = vars)) + 
+dodge <- position_dodge(width = 0.9)
+limits <- aes(ymax = emoDMTrend$mean + emoDMTrend$se,
+              ymin = emoDMTrend$mean - emoDMTrend$se)
+
+ggplot(data = emoDMTrend, aes(x = vars, y = mean, color = vars)) + 
   geom_point(size=2.5, alpha=0.6, color = "orange") +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
-  ggtitle("Emotion Rating (De Muur + De Hond concatenated), N=20")
+  ggtitle("Emotional Arousal Rating for De Muur, N=23")
+ggsave("~/Desktop/emoDM.png", plot = last_plot(), device = png(),
+  scale = 1, width = 300, height = 200, units = c("mm"),
+  dpi = 300, limitsize = TRUE)
+
+limits <- aes(ymax = emoDHTrend$mean + emoDHTrend$se,
+              ymin = emoDHTrend$mean - emoDHTrend$se)
+
+ggplot(data = emoDHTrend, aes(x = vars, y = mean, color = vars)) + 
+  geom_point(size=2.5, alpha=0.6, color = "orange") +
+  geom_errorbar(limits, position = dodge, width = 0.25) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) + 
+  ggtitle("Emotional Arousal Rating for De Mexicaanse Hond, N=23") 
+ggsave("~/Desktop/emoDH.png", plot = last_plot(), device = png(),
+  scale = 1, width = 300, height = 200, units = c("mm"),
+  dpi = 300, limitsize = TRUE)
 
 #LIT
 tlitResultClean <- t(litResultClean)
 tlitResultClean <- tlitResultClean[-c(1:2),]
 litTrend <- describe(tlitResultClean)
+litDMTrend <- litTrend[c(1:1237),]
+litDHTrend <- litTrend[c(1238:2354),]
+litDHTrend$vars <- seq(length=nrow(litDHTrend)) 
+
+dodge <- position_dodge(width = 0.9)
+limits <- aes(ymax = litDMTrend$mean + litDMTrend$se,
+              ymin = litDMTrend$mean - litDMTrend$se)
+
+ggplot(data = litDMTrend, aes(x = vars, y = mean, color = vars)) + 
+  geom_point(size=2.5, alpha=0.6, color = "orange") +
+  geom_errorbar(limits, position = dodge, width = 0.25) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) + 
+  ggtitle("Literariness Rating for De Muur, N=24")
+ggsave("~/Desktop/litDM.png", plot = last_plot(), device = png(),
+  scale = 1, width = 300, height = 200, units = c("mm"),
+  dpi = 300, limitsize = TRUE)
+
+limits <- aes(ymax = litDHTrend$mean + litDHTrend$se,
+              ymin = litDHTrend$mean - litDHTrend$se)
+
+ggplot(data = litDHTrend, aes(x = vars, y = mean, color = vars)) + 
+  geom_point(size=2.5, alpha=0.6, color = "orange") +
+  geom_errorbar(limits, position = dodge, width = 0.25) +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) + 
+  ggtitle("Literariness Rating for De Mexicaanse Hond, N=24")
+ggsave("~/Desktop/litDH.png", plot = last_plot(), device = png(),
+  scale = 1, width = 300, height = 200, units = c("mm"),
+  dpi = 300, limitsize = TRUE)
+
+
+```
+$useless Code---------------------------
 dodge <- position_dodge(width = 0.9)
 limits <- aes(ymax = litTrend$mean + litTrend$se,
               ymin = litTrend$mean - litTrend$se)
@@ -139,6 +193,5 @@ ggplot(data = litTrend, aes(x = vars, y = mean, color = vars)) +
   geom_errorbar(limits, position = dodge, width = 0.25) +
   theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) + 
-  ggtitle("Literariness Rating (De Muur + De Hond concatenated), N=21")
-
-```
+  ggtitle("Literariness Rating (De Muur + De Hond concatenated), N=24")
+----------------------------------------

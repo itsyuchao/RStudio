@@ -9,16 +9,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(readr)
-emo919 <- read_csv("~/Downloads/Verhalen_Emotional+Arousal_September+19%2C+2019_11.04.csv", 
+emo923 <- read_csv("~/Downloads/Verhalen_Emotional+Arousal_September+23%2C+2019_08.47.csv", 
     col_names = FALSE)
 
-lit919 <- read_csv("~/Downloads/Verhalen_Literariness_September+19%2C+2019_11.04.csv", 
+lit923 <- read_csv("~/Downloads/Verhalen_Literariness_September+23%2C+2019_08.46.csv", 
     col_names = FALSE)
 
 
-lit919 <- lit919[-c(3:13),-c(3:307)]
-emo919 <- emo919[-c(3:12), -c(3:392)]
-emo919 <- emo919[-c(17:19),]
-write_csv(emo919, path = "EmotionSurvey9_19.csv")
-write_csv(lit919, path = "LiterarinessSurvey9_19.csv")
+lit923 <- lit923[-c(3:13),-c(3:307)]
+emo923 <- emo923[-c(3:12), -c(3:392)]
+emo923 <- emo923[-c(17:19),]
+write_csv(emo923, path = "EmotionSurvey9_23.csv")
+write_csv(lit923, path = "LiterarinessSurvey9_23.csv")
 ```
