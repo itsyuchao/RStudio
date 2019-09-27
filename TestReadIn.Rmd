@@ -183,6 +183,25 @@ ggsave("~/Desktop/litDH.png", plot = last_plot(), device = png(),
 
 
 ```
+
+```{r}
+library('zoo')
+
+emoDMTrend <- cbind(emoDMTrend, rollmean(emoDMTrend$mean, k = 5, fill = NA, align = "center"))
+names(emoDMTrend)[14] <- "rollmean"
+litDMTrend <- cbind(litDMTrend, rollmean(litDMTrend$mean, k = 5, fill = NA, align = "center"))
+names(litDMTrend)[14] <- "rollmean"
+emo_lit_DMmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
+anova(emo_lit_DMmodel)
+
+
+emoDHTrend <- cbind(emoDHTrend, rollmean(emoDHTrend$mean, k = 5, fill = NA, align = "center"))
+names(emoDHTrend)[14] <- "rollmean"
+litDHTrend <- cbind(litDHTrend, rollmean(litDHTrend$mean, k = 5, fill = NA, align = "center"))
+names(litDHTrend)[14] <- "rollmean"
+emo_lit_DHmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
+anova(emo_lit_DHmodel)
+```
 $useless Code---------------------------
 dodge <- position_dodge(width = 0.9)
 limits <- aes(ymax = litTrend$mean + litTrend$se,
