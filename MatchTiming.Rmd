@@ -44,96 +44,64 @@ emo2VwTiming <- emoResultClean
 litOGwTiming <- litResultClean
 lit2VwTiming <- litResultClean
 
-  #EMO
-for (index in 1:1237) {
-  if (grepl(DHO[index,1], emoResultClean[index,1], fixed = TRUE)) {
-    emoOGwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- DHO[index, c(2,3)]
+
+addTimingCols <- function(totalWord, praatClean, resultClean, resultwTiming, colNum) {
+  if (totalWord == 1237) {
+     for (index in 1:totalWord) {
+        if (grepl(praatClean[index,1], resultClean[index,1], fixed = TRUE)) {
+          resultwTiming[index, c(colNum+1, colNum+2)] <- praatClean[index, c(2,3)]
+        }
+        else {
+          resultwTiming[index, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+        }
+     }
   }
   else {
-    emoOGwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
+    for (index in 1:totalWord) {
+      if (grepl(praatClean[index,1], resultClean[index + 1237,1], fixed = TRUE)) {
+        resultwTiming[index + 1237, c(colNum+1, colNum+2)] <- praatClean[index, c(2,3)]
+      }
+      else {
+        resultwTiming[index + 1237, c(colNum+1, colNum+2)] <- c("mismatch", "mismatch")
+      }
+    }
   }
+  return(resultwTiming)
 }
 
-for (index in 1:1117) {
-  if (grepl(DMO[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
-    emoOGwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- DMO[index, c(2,3)]
+emoOGwTiming <- addTimingCols(1237, DHO, emoResultClean, emoOGwTiming, colNumEmo)
+emoOGwTiming <- addTimingCols(1117, DMO, emoResultClean, emoOGwTiming, colNumEmo)
+litOGwTiming <- addTimingCols(1237, DHO, litResultClean, litOGwTiming, colNumLit)
+litOGwTiming <- addTimingCols(1117, DMO, litResultClean, litOGwTiming, colNumLit)
+emo2VwTiming <- addTimingCols(1237, DH2V, emoResultClean, emo2VwTiming, colNumEmo)
+emo2VwTiming <- addTimingCols(1117, DM2V, emoResultClean, emo2VwTiming, colNumEmo)
+lit2VwTiming <- addTimingCols(1237, DH2V, litResultClean, lit2VwTiming, colNumLit)
+lit2VwTiming <- addTimingCols(1117, DM2V, litResultClean, lit2VwTiming, colNumLit)
+
+addMNCol <- function(resultwTiming, colNum) {
+  for (colIndex in 3: colNum) { 
+    resultwTiming[, colIndex] <- as.numeric(emoOGwTiming[, colIndex])
   }
-  else {
-    emoOGwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
-  }
+  resultwTiming <- transform(resultwTiming, MN = rowMeans(resultwTiming[ ,3:colNum], na.rm = TRUE))
+  return(resultwTiming)
 }
 
-  #LIT
-for (index in 1:1237) {
-  if (grepl(DHO[index,1], litResultClean[index,1], fixed = TRUE)) {
-    litOGwTiming[index, c(colNumLit+1, colNumLit+2)] <- DHO[index, c(2,3)]
-  }
-  else {
-    litOGwTiming[index, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
-  }
-}
+emoOGwTiming <- addMNCol(emoOGwTiming, colNumEmo)
+emo2VwTiming <- addMNCol(emo2VwTiming, colNumEmo)
+litOGwTiming <- addMNCol(litOGwTiming, colNumLit)
+lit2VwTiming <- addMNCol(lit2VwTiming, colNumLit)
 
-for (index in 1:1117) {
-  if (grepl(DMO[index,1], litResultClean[index + 1237,1], fixed = TRUE)) {
-    litOGwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- DMO[index, c(2,3)]
-  }
-  else {
-    litOGwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
-  }
-}
-#-------------------------------------------------- 
-
-
-#MATCH, FOR 2V(THIRD PERSON PERSPEC), THE TIMING WITH RATED WORDS
-  #EMO
-for (index in 1:1237) {
-  if (grepl(DH2V[index,1], emoResultClean[index,1], fixed = TRUE)) {
-    emo2VwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- DH2V[index, c(2,3)]
-  }
-  else {
-    emo2VwTiming[index, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
-  }
-}
-
-for (index in 1:1117) {
-  if (grepl(DM2V[index,1], emoResultClean[index + 1237,1], fixed = TRUE)) {
-    emo2VwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- DM2V[index, c(2,3)]
-  }
-  else {
-    emo2VwTiming[index + 1237, c(colNumEmo+1, colNumEmo+2)] <- c("mismatch", "mismatch")
-  }
-}
-
-  #LIT
-for (index in 1:1237) {
-  if (grepl(DH2V[index,1], litResultClean[index,1], fixed = TRUE)) {
-    lit2VwTiming[index, c(colNumLit+1, colNumLit+2)] <- DH2V[index, c(2,3)]
-  }
-  else {
-    lit2VwTiming[index, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
-  }
-}
-
-for (index in 1:1117) {
-  if (grepl(DM2V[index,1], litResultClean[index + 1237,1], fixed = TRUE)) {
-    lit2VwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- DM2V[index, c(2,3)]
-  }
-  else {
-    lit2VwTiming[index + 1237, c(colNumLit+1, colNumLit+2)] <- c("mismatch", "mismatch")
-  }
-}
-#-------------------------------------------------- 
 
 
 #WRITE OUTPUT FILES
-emoDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
-emoDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
-emoDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
-emoDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+2)
-litDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
-litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
-litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
-litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+2)
+emoDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
+emoDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
+emoDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
+emoDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
+litDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
+litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
+litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
+litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
 
 cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
   if (totalWord == 1237) {
@@ -158,6 +126,7 @@ cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
   }
   write.csv(outputFile, file = paste("thesis/", outputName, ".csv", sep=""))
 }
+#This function cleans mismatched entries and write CSV output files. 
 
 cleanOutput(1237, colNumEmo, emoOGwTiming, emoDHOFinal, "emoDHOFinal")
 cleanOutput(1117, colNumEmo, emoOGwTiming, emoDMOFinal, "emoDMOFinal")
@@ -168,6 +137,5 @@ cleanOutput(1117, colNumLit, litOGwTiming, litDMOFinal, "litDMOFinal")
 cleanOutput(1237, colNumLit, lit2VwTiming, litDH2VFinal, "litDH2VFinal")
 cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
 #-------------------------------------------------- 
-
 
 ```

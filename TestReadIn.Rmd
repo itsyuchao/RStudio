@@ -27,11 +27,11 @@ qnLabel <- levels(template$qnLabel)
 #------------------------------------------------------- 
 
 #MATCH EMO RESULTS    
-emoResult <- read.csv(file="Verhalen_Emotional+Arousal_September+23%2C+2019_08.47.csv", 
+emoResult <- read.csv(file="Verhalen_Emotional+Arousal_October+1%2C+2019_13.27.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 emoResult <- emoResult[-c(1,2), ] #get rid of title row
 emoResult <- emoResult[-c(1:9), ] #get rid of preview Test results
-emoResult <- emoResult[-c(15:17), ] #get rid of incomplete results
+emoResult <- emoResult[-c(15:17,28), ] #get rid of incomplete results
 
 
 totalParticipant <- nrow(emoResult)
@@ -65,7 +65,7 @@ for (indexResponse in 1:totalParticipant) {
 #------------------------------------------------------- 
 
 #MATCH LIT RESULTS
-litResult <- read.csv(file="Verhalen_Literariness_September+23%2C+2019_08.46.csv", 
+litResult <- read.csv(file="Verhalen_Literariness_October+1%2C+2019_13.28.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 litResult <- litResult[-c(1,2), ] #get rid of title row
 litResult <- litResult[-c(1:10), ] #get rid of preview Test results
