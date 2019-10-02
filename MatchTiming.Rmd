@@ -80,7 +80,7 @@ lit2VwTiming <- addTimingCols(1117, DM2V, litResultClean, lit2VwTiming, colNumLi
 
 addMNCol <- function(resultwTiming, colNum) {
   for (colIndex in 3: colNum) { 
-    resultwTiming[, colIndex] <- as.numeric(emoOGwTiming[, colIndex])
+    resultwTiming[, colIndex] <- as.numeric(resultwTiming[, colIndex])
   }
   resultwTiming <- transform(resultwTiming, MN = rowMeans(resultwTiming[ ,3:colNum], na.rm = TRUE))
   return(resultwTiming)
@@ -120,10 +120,11 @@ cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
         next
       }
       else {
-        outputFile <- rbind(outputFile, rawData[index, ])
+        outputFile <- rbind(outputFile, rawData[index+1237, ])
       }
     }
   }
+  #str(outputFile)
   write.csv(outputFile, file = paste("thesis/", outputName, ".csv", sep=""))
 }
 #This function cleans mismatched entries and write CSV output files. 
@@ -139,3 +140,4 @@ cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
 #-------------------------------------------------- 
 
 ```
+
