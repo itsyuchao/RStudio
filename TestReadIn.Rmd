@@ -130,9 +130,9 @@ temoResultClean <- t(emoResultClean)
 temoResultClean <- temoResultClean[-c(1:2),]
 
 emoTrend <- describe(temoResultClean)
-emoDMTrend <- emoTrend[c(1:1237),]
-emoDHTrend <- emoTrend[c(1238:2354),]
-emoDHTrend$vars <- seq(length=nrow(emoDHTrend)) 
+emoDHTrend <- emoTrend[c(1:1237),]
+emoDMTrend <- emoTrend[c(1238:2354),]
+emoDMTrend$vars <- seq(length=nrow(emoDMTrend)) 
 
 dotWithErrorPlotSave(emoDMTrend, temoResultClean, "Emotional Arousal Rating for De Muur", "emoDM")
 dotWithErrorPlotSave(emoDHTrend, temoResultClean, "Emotional Arousal Rating for De Mexicaanse Hond", "emoDH")
@@ -142,9 +142,9 @@ dotWithErrorPlotSave(emoDHTrend, temoResultClean, "Emotional Arousal Rating for 
 tlitResultClean <- t(litResultClean)
 tlitResultClean <- tlitResultClean[-c(1:2),]
 litTrend <- describe(tlitResultClean)
-litDMTrend <- litTrend[c(1:1237),]
-litDHTrend <- litTrend[c(1238:2354),]
-litDHTrend$vars <- seq(length=nrow(litDHTrend)) 
+litDHTrend <- litTrend[c(1:1237),]
+litDMTrend <- litTrend[c(1238:2354),]
+litDMTrend$vars <- seq(length=nrow(litDMTrend)) 
 
 dotWithErrorPlotSave(litDMTrend, tlitResultClean, "Literariness Rating for De Muur", "litDM")
 dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Mexicaanse Hond", "litDH")
@@ -156,18 +156,21 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 #SIMPLE LINEAR REGRESSION ANOVA OF EMO ON LIT, BOXCAR SMOOTHED 
 library('zoo')
 
-emoDMTrend <- cbind(emoDMTrend, rollmean(emoDMTrend$mean, k = 5, fill = NA, align = "center"))
-names(emoDMTrend)[14] <- "rollmean"
-litDMTrend <- cbind(litDMTrend, rollmean(litDMTrend$mean, k = 5, fill = NA, align = "center"))
-names(litDMTrend)[14] <- "rollmean"
-emo_lit_DMmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
-anova(emo_lit_DMmodel)
-
-
 emoDHTrend <- cbind(emoDHTrend, rollmean(emoDHTrend$mean, k = 5, fill = NA, align = "center"))
 names(emoDHTrend)[14] <- "rollmean"
 litDHTrend <- cbind(litDHTrend, rollmean(litDHTrend$mean, k = 5, fill = NA, align = "center"))
 names(litDHTrend)[14] <- "rollmean"
-emo_lit_DHmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
+emo_lit_DHmodel <- lm(emoDHTrend$mean ~ litDHTrend$mean)
+emo_lit_DHboxedmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
 anova(emo_lit_DHmodel)
+anova(emo_lit_DHboxedmodel)
+
+emoDMTrend <- cbind(emoDMTrend, rollmean(emoDMTrend$mean, k = 5, fill = NA, align = "center"))
+names(emoDMTrend)[14] <- "rollmean"
+litDMTrend <- cbind(litDMTrend, rollmean(litDMTrend$mean, k = 5, fill = NA, align = "center"))
+names(litDMTrend)[14] <- "rollmean"
+emo_lit_DMmodel <- lm(emoDMTrend$mean ~ litDMTrend$mean)
+emo_lit_DMboxedmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
+anova(emo_lit_DMmodel)
+anova(emo_lit_DMboxedmodel)
 ```
