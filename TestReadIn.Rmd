@@ -109,6 +109,7 @@ saveRDS(template, file = "template.rds")
 ```{r} 
 #Visualize ratings 
 library(ggplot2)
+
 library(psych)
 
 dotWithErrorPlotSave <- function(trend, tResultClean, plotTitle, shortTitle) { 

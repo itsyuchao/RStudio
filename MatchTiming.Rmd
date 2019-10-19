@@ -78,30 +78,39 @@ emo2VwTiming <- addTimingCols(1117, DM2V, emoResultClean, emo2VwTiming, colNumEm
 lit2VwTiming <- addTimingCols(1237, DH2V, litResultClean, lit2VwTiming, colNumLit)
 lit2VwTiming <- addTimingCols(1117, DM2V, litResultClean, lit2VwTiming, colNumLit)
 
-addMNCol <- function(resultwTiming, colNum) {
+stderr <- function(x) {
+  sd(x, na.rm = TRUE)/sqrt(length(x[!is.na(x)]))
+}
+
+addMNSECol <- function(resultwTiming, colNum) {
   for (colIndex in 3: colNum) { 
     resultwTiming[, colIndex] <- as.numeric(resultwTiming[, colIndex])
   }
   resultwTiming <- transform(resultwTiming, MN = rowMeans(resultwTiming[ ,3:colNum], na.rm = TRUE))
+  rowNum <- nrow(resultwTiming)
+  for (rowIndex in 1:rowNum) {
+    resultwTiming[rowIndex, colNum+4] <- stderr(resultwTiming[rowIndex, 3:colNum])
+  }
+  names(resultwTiming)[colNum+4] <- 'SE'
   return(resultwTiming)
 }
 
-emoOGwTiming <- addMNCol(emoOGwTiming, colNumEmo)
-emo2VwTiming <- addMNCol(emo2VwTiming, colNumEmo)
-litOGwTiming <- addMNCol(litOGwTiming, colNumLit)
-lit2VwTiming <- addMNCol(lit2VwTiming, colNumLit)
+emoOGwTiming <- addMNSECol(emoOGwTiming, colNumEmo)
+emo2VwTiming <- addMNSECol(emo2VwTiming, colNumEmo)
+litOGwTiming <- addMNSECol(litOGwTiming, colNumLit)
+lit2VwTiming <- addMNSECol(lit2VwTiming, colNumLit)
 
 
 
 #WRITE OUTPUT FILES
-emoDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
-emoDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
-emoDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
-emoDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+3)
-litDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
-litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
-litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
-litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+3)
+emoDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+4)
+emoDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+4)
+emoDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+4)
+emoDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumEmo+4)
+litDHOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
+litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
+litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
+litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
 
 cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
   if (totalWord == 1237) {
@@ -126,18 +135,48 @@ cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
   }
   #str(outputFile)
   write.csv(outputFile, file = paste("thesis/", outputName, ".csv", sep=""))
+  return(outputFile)
 }
 #This function cleans mismatched entries and write CSV output files. 
 
-cleanOutput(1237, colNumEmo, emoOGwTiming, emoDHOFinal, "emoDHOFinal")
-cleanOutput(1117, colNumEmo, emoOGwTiming, emoDMOFinal, "emoDMOFinal")
-cleanOutput(1237, colNumEmo, emo2VwTiming, emoDH2VFinal, "emoDH2VFinal")
-cleanOutput(1117, colNumEmo, emo2VwTiming, emoDM2VFinal, "emoDM2VFinal")
-cleanOutput(1237, colNumLit, litOGwTiming, litDHOFinal, "litDHOFinal")
-cleanOutput(1117, colNumLit, litOGwTiming, litDMOFinal, "litDMOFinal")
-cleanOutput(1237, colNumLit, lit2VwTiming, litDH2VFinal, "litDH2VFinal")
-cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
+emoDHOFinal <- cleanOutput(1237, colNumEmo, emoOGwTiming, emoDHOFinal, "emoDHOFinal")
+emoDMOFinal <- cleanOutput(1117, colNumEmo, emoOGwTiming, emoDMOFinal, "emoDMOFinal")
+emoDH2VFinal <- cleanOutput(1237, colNumEmo, emo2VwTiming, emoDH2VFinal, "emoDH2VFinal")
+emoDM2VFinal <- cleanOutput(1117, colNumEmo, emo2VwTiming, emoDM2VFinal, "emoDM2VFinal")
+litDHOFinal <- cleanOutput(1237, colNumLit, litOGwTiming, litDHOFinal, "litDHOFinal")
+litDMOFinal <- cleanOutput(1117, colNumLit, litOGwTiming, litDMOFinal, "litDMOFinal")
+litDH2VFinal <- cleanOutput(1237, colNumLit, lit2VwTiming, litDH2VFinal, "litDH2VFinal")
+litDM2VFinal <- cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
 #-------------------------------------------------- 
+
+```
+
+```{r, eval=FALSE}
+library(ggplot2)
+library(plotly)
+plot(emoDHOFinal$Onset, emoDHOFinal$MN)
+p <- ggplot(litDHOFinal, aes(x = Onset, y = MN)) +
+  geom_point() #+ 
+  #geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE)
+ggplotly(p)
+
+dotWithErrorPlotSave <- function(finalData) { 
+  #dodge <- position_dodge(width = 0.9)
+  limits <- aes(ymax = finalData$MN + finalData$SE, 
+                ymin = finalData$MN - finalData$SE)
+ p <- ggplot(data = finalData, aes(x = Onset, y = MN, color = "blue")) + 
+    geom_point(size=2.5, alpha=0.6, color = "orange") +
+    geom_errorbar(limits, width = 0.25) +
+    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), 
+          axis.title.x=element_blank()) + 
+    ggtitle(paste("emoDH", ", N=", ncol(finalData)-6, sep=""))
+ # ggsave(paste("~/Desktop/", shortTitle,".png", sep = ""), plot = last_plot(), device = png(),
+#    scale = 1, width = 300, height = 200, units = c("mm"),
+ #   dpi = 300, limitsize = TRUE)
+  return(p)
+}
+
+dotWithErrorPlotSave(emoDHOFinal)
 
 ```
 
