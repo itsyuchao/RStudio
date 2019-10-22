@@ -119,8 +119,8 @@ dotWithErrorPlotSave <- function(trend, tResultClean, plotTitle, shortTitle) {
   ggplot(data = trend, aes(x = vars, y = mean, color = vars)) + 
     geom_point(size=2.5, alpha=0.6, color = "orange") +
     geom_errorbar(limits, position = dodge, width = 0.25) +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), 
-          axis.title.x=element_blank()) + 
+    xlab("Word #") +
+    theme(text = element_text(size=20), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + 
     ggtitle(paste(plotTitle, ", N=", nrow(tResultClean), sep=""))
   ggsave(paste("~/Desktop/", shortTitle,".png", sep = ""), plot = last_plot(), device = png(),
     scale = 1, width = 300, height = 200, units = c("mm"),
