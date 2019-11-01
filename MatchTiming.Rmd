@@ -78,6 +78,7 @@ emo2VwTiming <- addTimingCols(1117, DM2V, emoResultClean, emo2VwTiming, colNumEm
 lit2VwTiming <- addTimingCols(1237, DH2V, litResultClean, lit2VwTiming, colNumLit)
 lit2VwTiming <- addTimingCols(1117, DM2V, litResultClean, lit2VwTiming, colNumLit)
 
+
 stderr <- function(x) {
   sd(x, na.rm = TRUE)/sqrt(length(x[!is.na(x)]))
 }

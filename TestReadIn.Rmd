@@ -155,6 +155,7 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 
 
 ```{r}
+#Intraclass correlation
 library(lme4)
 emoResultCleanICC <- matrix(data = NA, nrow = 0, ncol = 27)
 for (index in 1:2354) {
