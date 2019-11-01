@@ -153,6 +153,32 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 
 ```
 
+
+```{r}
+library(lme4)
+emoResultCleanICC <- matrix(data = NA, nrow = 0, ncol = 27)
+for (index in 1:2354) {
+  emoResultCleanICC <- rbind(emoResultCleanICC, emoResultClean[index, 3:29])
+}
+for (j in 1:27) {
+    emoResultCleanICC[,j] <- as.numeric(emoResultCleanICC[,j])
+}
+ICC(emoResultCleanICC, missing = FALSE, alpha = 0.05)
+
+
+litResultCleanICC <- matrix(data = NA, nrow = 0, ncol = 27)
+for (index in 1:2354) {
+  litResultCleanICC <- rbind(litResultCleanICC, litResultClean[index, 3:29])
+}
+for (j in 1:27) {
+    litResultCleanICC[,j] <- as.numeric(litResultCleanICC[,j])
+}
+ICC(litResultCleanICC, missing = FALSE, alpha = 0.05)
+
+```
+
+
+
 ```{r}
 #SIMPLE LINEAR REGRESSION ANOVA OF EMO ON LIT, BOXCAR SMOOTHED 
 library('zoo')
