@@ -1,0 +1,22 @@
+---
+title: "CreateEventBoundaries"
+author: "Yuchao Wang"
+date: "11/7/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r New columns of event boundaries} 
+DHOmarked <- read.csv(file = "thesis/emoDHOFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+str(DHOmarked)
+begin_row <- 1
+end_row <- 1
+total_row <- nrow(DHOmarked)
+while (end_row <= total_row) {
+  if  (is.na(DHOmarked$marker_event[end_row]))
+  end_row <- end_row+1
+}
+```
