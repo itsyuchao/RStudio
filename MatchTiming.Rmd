@@ -9,9 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r pressure, echo=FALSE}
-
-#READ IN ALL 4 ADJUSTED PRAAT WORD ONSETS AND DURATIONS
+```{r matchPraatFiles, echo=FALSE}
+#READ IN ALL 4 ADJUSTED PRAAT WORD ONSETS AND DURATIONS----
 colLabel <- c("Word", "Onset", "Duration")
 DHO <- read.delim("thesis/De Hond_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DHO <- DHO[-c(1:3), ] #get rid of title
@@ -28,9 +27,8 @@ colnames(DH2V) <- colLabel
 DM2V <- read.delim("thesis/De Muur_2V_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
 DM2V <- DM2V[-c(1,2), ] #get rid of title
 colnames(DM2V) <- colLabel
-#--------------------------------------------------
 
-#MATCH, FOR ORIGINAL(FIRST PERSON PERSPEC), THE TIMING WITH RATED WORDS
+#MATCH, FOR ORIGINAL(FIRST PERSON PERSPEC), THE TIMING WITH RATED WORDS----
 
 #SETUP 
 emoResultClean <- readRDS("emoResultClean.rds")
@@ -148,11 +146,10 @@ litDHOFinal <- cleanOutput(1237, colNumLit, litOGwTiming, litDHOFinal, "litDHOFi
 litDMOFinal <- cleanOutput(1117, colNumLit, litOGwTiming, litDMOFinal, "litDMOFinal")
 litDH2VFinal <- cleanOutput(1237, colNumLit, lit2VwTiming, litDH2VFinal, "litDH2VFinal")
 litDM2VFinal <- cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
-#-------------------------------------------------- 
 
 ```
 
-```{r, eval=FALSE}
+```{r interactivePlotsAttempt, eval=FALSE}
 library(ggplot2)
 library(plotly)
 plot(emoDHOFinal$Onset, emoDHOFinal$MN)

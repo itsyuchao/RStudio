@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyr)
 ```
 
-```{r, echo = FALSE}
-#CLEAN UP DELIMITED CSV FILE CONTAINING ALL RATED WORDS IN SURVEY
+```{r Clean up raw ratings, echo = FALSE}
+#Clean up delimited csv files containing all rated words in survey----
 template <- read.csv(file = "forWordSeparation_cleaned.csv", header = F, sep = ",", stringsAsFactors = FALSE)
 template <- t(template) 
 colnames(template) <- template[1, ] 
@@ -24,9 +24,9 @@ template$qnLabel <- trimws(template$qnLabel)
 template$qnLabel <- as.factor(template$qnLabel)
 template$qnLabel <- factor(template$qnLabel, levels = c("3.1","5.1","7.1","9.1","11.1","13.1","15.1","17.1","19.1","24.1","26.1","28.1","30.1","32.1","34.1","36.1","38.1")) 
 qnLabel <- levels(template$qnLabel)
-#------------------------------------------------------- 
 
-#MATCH EMO RESULTS    
+
+#Match emo results----    
 emoResult <- read.csv(file="Verhalen_Emotional+Arousal_October+1%2C+2019_13.27.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 emoResult <- emoResult[-c(1,2), ] #get rid of title row
@@ -62,9 +62,8 @@ for (indexResponse in 1:totalParticipant) {
   }
 }
 
-#------------------------------------------------------- 
 
-#MATCH LIT RESULTS
+#Match lit results----
 litResult <- read.csv(file="Verhalen_Literariness_October+1%2C+2019_13.28.csv", 
                   header = TRUE, sep = ",", stringsAsFactors = FALSE)
 litResult <- litResult[-c(1,2), ] #get rid of title row
@@ -99,17 +98,16 @@ for (indexResponse in 1:totalParticipant) {
   }
 }
 
-#------------------------------------------------------- 
+#Save clean files---- 
 saveRDS(emoResultClean, file = "emoResultClean.rds")
 saveRDS(litResultClean, file = "litResultClean.rds")
 saveRDS(template, file = "template.rds")
 
 ```
 
-```{r} 
-#Visualize ratings 
+```{r Visualization} 
+#Visualize ratings----
 library(ggplot2)
-
 library(psych)
 
 dotWithErrorPlotSave <- function(trend, tResultClean, plotTitle, shortTitle) { 
@@ -154,8 +152,7 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 ```
 
 
-```{r}
-#Intraclass correlation
+```{r Intraclass Correlation}
 library(lme4)
 emoResultCleanICC <- matrix(data = NA, nrow = 0, ncol = 27)
 for (index in 1:2354) {
@@ -180,8 +177,8 @@ ICC(litResultCleanICC, missing = FALSE, alpha = 0.05)
 
 
 
-```{r}
-#SIMPLE LINEAR REGRESSION ANOVA OF EMO ON LIT, BOXCAR SMOOTHED 
+```{r Correlation of Emo~Lit}
+#Simple linear regression ANOVA of Emo on Lit ratings, with and without boxcar smoothing 
 library('zoo')
 
 emoDHTrend <- cbind(emoDHTrend, rollmean(emoDHTrend$mean, k = 5, fill = NA, align = "center"))
