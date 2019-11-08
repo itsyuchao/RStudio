@@ -9,14 +9,68 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+```{r Match 2V according to OV, include=FALSE} 
+DM2Vmarked <- read.csv(file = "thesis/emoDM2VFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+for (index in 1:1233) {
+  if (is.na(DMOmarked$marker_event[index])) {
+    next
+  }
+  else {
+    find.match <- which(DM2Vmarked$word == DMOmarked$word[index], arr.ind = TRUE)
+    num.match <- length(find.match)
+    if (num.match == 0) {
+      print(paste(DMOmarked$word[index], " at row ", index, " has no match in 2V", sep = ""))
+    }
+    else {
+      if (num.match ==1) {
+        DM2Vmarked$marker_event[find.match] <- 1 
+      }
+      else {
+        print(paste(DMOmarked$word[index], " at row ", index, " has multiple matches at row ", find.match, " in 2V", sep = ""))
+      }
+    }
+  }
+}
+#write.csv(DM2Vmarked, file = "thesis/emoDM2VFinal_eventMarked.csv", na = "")
+
+```
+
+
 ```{r New columns of event boundaries} 
 DHOmarked <- read.csv(file = "thesis/emoDHOFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
-str(DHOmarked)
-begin_row <- 1
-end_row <- 1
-total_row <- nrow(DHOmarked)
-while (end_row <= total_row) {
-  if  (is.na(DHOmarked$marker_event[end_row]))
-  end_row <- end_row+1
+DH2Vmarked <- read.csv(file = "thesis/emoDH2VFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+DMOmarked <- read.csv(file = "thesis/emoDMOFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+DM2Vmarked <- read.csv(file = "thesis/emoDM2VFinal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+
+addEventParam <- function(dataEventMarked) {
+#initialize condition for search
+  begin_row <- 1
+  end_row <- 1
+  total_row <- nrow(dataEventMarked)
+  #search loop 
+  while (end_row <= total_row) {
+    if  (is.na(dataEventMarked$marker_event[end_row])) {
+      end_row <- end_row+1
+    }
+    else {
+      dataEventMarked$onset_event[end_row] <- dataEventMarked$Onset[begin_row]
+      dataEventMarked$duration_event[end_row] <- sum(dataEventMarked$Duration[begin_row:end_row])
+      dataEventMarked$MN_event[end_row] <- mean(dataEventMarked$MN[begin_row:end_row], na.rm = TRUE)
+      begin_row <- end_row+1
+      end_row <- end_row+1
+    }
+  }
+  return(dataEventMarked)
 }
+
+DHOmarked <- addEventParam(DHOmarked)
+DH2Vmarked <- addEventParam(DH2Vmarked)
+DMOmarked <- addEventParam(DMOmarked)
+DM2Vmarked <- addEventParam(DM2Vmarked)
+
+write.csv(DHOmarked, file = "thesis/emoDHOFinal_eventMarked.csv", na = "")
+write.csv(DH2Vmarked, file = "thesis/emoDH2VFinal_eventMarked.csv", na = "")
+write.csv(DMOmarked, file = "thesis/emoDMOFinal_eventMarked.csv", na = "")
+write.csv(DM2Vmarked, file = "thesis/emoDM2VFinal_eventMarked.csv", na = "")
 ```
