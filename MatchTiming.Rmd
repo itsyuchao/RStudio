@@ -149,6 +149,71 @@ litDM2VFinal <- cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2
 
 ```
 
+```{r Visualization} 
+#Visualize ratings against time----
+library(ggplot2)
+emoDHOFinal <- transform(emoDHOFinal, Onset = as.numeric(Onset), Duration = as.numeric(Duration))
+emoDMOFinal <- transform(emoDMOFinal, Onset = as.numeric(Onset), Duration = as.numeric(Duration))
+litDHOFinal <- transform(litDHOFinal, Onset = as.numeric(Onset), Duration = as.numeric(Duration))
+litDMOFinal <- transform(litDMOFinal, Onset = as.numeric(Onset), Duration = as.numeric(Duration))
+
+dotWithErrorPlotSave <- function(trend, plotTitle, shortTitle) { 
+  limits <- aes(ymax = trend$MN + trend$SE, 
+                ymin = trend$MN - trend$SE)
+  ggplot(data = trend, aes(x = Onset, y = MN, color = Onset)) + 
+    geom_point(size=2.5, alpha=0.8, color = "orange") +
+    geom_errorbar(limits, width = 0.5) +
+    xlab("Word Onset Time (in sec)") +
+    ylab("Mean Rating") +
+    theme(text = element_text(size=15), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + 
+    ggtitle(paste(plotTitle, ", N=", ncol(trend)-6, sep=""))
+  ggsave(paste("~/Desktop/", shortTitle,".png", sep = ""), plot = last_plot(), device = png(),
+    scale = 1, width = 300, height = 200, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+}
+#EMO
+
+dotWithErrorPlotSave(emoDHOFinal, "Emotional Arousal Rating for De Mexicaanse Hond", "emoDHtime")
+dotWithErrorPlotSave(emoDMOFinal, "Emotional Arousal Rating for De Muur", "emoDMtime")
+
+
+
+#LIT
+dotWithErrorPlotSave(litDHOFinal, "Literariness Rating for De Mexicaanse Hond", "litDHtime")
+dotWithErrorPlotSave(litDMOFinal, "Literariness Rating for De Muur", "litDMtime")
+
+```
+
+```{r Visualization facetgrid}
+allRatingMarked <- read.csv(file = "thesis/AllOriginal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+
+limits <- aes(ymax = allRatingMarked$MN + allRatingMarked$SE, 
+                ymin = allRatingMarked$MN - allRatingMarked$SE)
+word_plot <- ggplot(data = allRatingMarked, aes(x = Onset, y = MN, color = Rating)) + 
+    geom_point(size=2.5, color = "orange") +
+    geom_errorbar(limits, width = 0.5) +
+    xlab("Word Onset Time (in sec)") +
+    ylab("Mean Rating") +
+    theme(text = element_text(size=15),  axis.ticks.x=element_blank()) + 
+    facet_grid(Rating ~ Story, scales = "free_y")
+event_plot <- ggplot(data = allRatingMarked, aes(x = Onset_event, y = MN_event, color = Rating)) + 
+    geom_step(direction = "hv", size=1) +
+    xlab("Event Onset Time (in sec)") +
+    ylab("Mean Rating") +
+    theme(text = element_text(size=15),  axis.ticks.x=element_blank()) + 
+    facet_grid(Rating ~ Story, scales = "free_y")
+ggsave("~/Desktop/allWordRating.png", plot = word_plot, device = png(),
+    scale = 1, width = 500, height = 300, units = c("mm"),
+    dpi = 600, limitsize = TRUE)
+ggsave("~/Desktop/allEventRating.png", plot = event_plot, device = png(),
+    scale = 1, width = 500, height = 300, units = c("mm"),
+    dpi = 600, limitsize = TRUE)
+
+
+
+```
+
+
 ```{r interactivePlotsAttempt, eval=FALSE}
 library(ggplot2)
 library(plotly)

@@ -106,7 +106,7 @@ saveRDS(template, file = "template.rds")
 ```
 
 ```{r Visualization} 
-#Visualize ratings----
+#Visualize ratings against word number----
 library(ggplot2)
 library(psych)
 
@@ -152,7 +152,7 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 ```
 
 
-```{r Intraclass Correlation}
+```{r Intraclass Correlation Coefficient}
 library(lme4)
 emoResultCleanICC <- matrix(data = NA, nrow = 0, ncol = 27)
 for (index in 1:2354) {
