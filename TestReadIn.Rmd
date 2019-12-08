@@ -105,7 +105,7 @@ saveRDS(template, file = "template.rds")
 
 ```
 
-```{r Visualization} 
+```{r Individual visualization of rating against word #, include=FALSE} 
 #Visualize ratings against word number----
 library(ggplot2)
 library(psych)
@@ -185,17 +185,20 @@ emoDHTrend <- cbind(emoDHTrend, rollmean(emoDHTrend$mean, k = 5, fill = NA, alig
 names(emoDHTrend)[14] <- "rollmean"
 litDHTrend <- cbind(litDHTrend, rollmean(litDHTrend$mean, k = 5, fill = NA, align = "center"))
 names(litDHTrend)[14] <- "rollmean"
-emo_lit_DHmodel <- lm(emoDHTrend$mean ~ litDHTrend$mean)
-emo_lit_DHboxedmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
-anova(emo_lit_DHmodel)
-anova(emo_lit_DHboxedmodel)
+#emo_lit_DHmodel <- lm(emoDHTrend$mean ~ litDHTrend$mean)
+#emo_lit_DHboxedmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
+#anova(emo_lit_DHmodel)
+#anova(emo_lit_DHboxedmodel)
+cor.test(emoDHTrend$mean, litDHTrend$mean, method = "pearson")
+
 
 emoDMTrend <- cbind(emoDMTrend, rollmean(emoDMTrend$mean, k = 5, fill = NA, align = "center"))
 names(emoDMTrend)[14] <- "rollmean"
 litDMTrend <- cbind(litDMTrend, rollmean(litDMTrend$mean, k = 5, fill = NA, align = "center"))
 names(litDMTrend)[14] <- "rollmean"
-emo_lit_DMmodel <- lm(emoDMTrend$mean ~ litDMTrend$mean)
-emo_lit_DMboxedmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
-anova(emo_lit_DMmodel)
-anova(emo_lit_DMboxedmodel)
+#emo_lit_DMmodel <- lm(emoDMTrend$mean ~ litDMTrend$mean)
+#emo_lit_DMboxedmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
+#anova(emo_lit_DMmodel)
+#anova(emo_lit_DMboxedmodel)
+cor.test(emoDMTrend$mean, litDMTrend$mean, method = "pearson")
 ```

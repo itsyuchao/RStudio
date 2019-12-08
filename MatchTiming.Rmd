@@ -149,7 +149,7 @@ litDM2VFinal <- cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2
 
 ```
 
-```{r Visualization} 
+```{r Individual visualization of rating against time, include = FALSE} 
 #Visualize ratings against time----
 library(ggplot2)
 emoDHOFinal <- transform(emoDHOFinal, Onset = as.numeric(Onset), Duration = as.numeric(Duration))
@@ -184,7 +184,7 @@ dotWithErrorPlotSave(litDMOFinal, "Literariness Rating for De Muur", "litDMtime"
 
 ```
 
-```{r Visualization facetgrid}
+```{r Overall visualization facetgrid}
 allRatingMarked <- read.csv(file = "thesis/AllOriginal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
 
 limits <- aes(ymax = allRatingMarked$MN + allRatingMarked$SE, 
@@ -194,37 +194,67 @@ word_plot <- ggplot(data = allRatingMarked, aes(x = Onset, y = MN, color = Ratin
     geom_errorbar(limits, width = 0.5) +
     xlab("Word Onset Time (in sec)") +
     ylab("Mean Rating") +
-    theme(text = element_text(size=15),  axis.ticks.x=element_blank()) + 
+    theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
     facet_grid(Rating ~ Story, scales = "free_y")
 event_plot <- ggplot(data = allRatingMarked, aes(x = Onset_event, y = MN_event, color = Rating)) + 
-    geom_step(direction = "hv", size=1) +
+    geom_step(direction = "hv", size=0.5) +
     xlab("Event Onset Time (in sec)") +
     ylab("Mean Rating") +
-    theme(text = element_text(size=15),  axis.ticks.x=element_blank()) + 
+    theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
     facet_grid(Rating ~ Story, scales = "free_y")
 ggsave("~/Desktop/allWordRating.png", plot = word_plot, device = png(),
-    scale = 1, width = 500, height = 300, units = c("mm"),
-    dpi = 600, limitsize = TRUE)
+    scale = 1, width = 400, height = 240, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
 ggsave("~/Desktop/allEventRating.png", plot = event_plot, device = png(),
-    scale = 1, width = 500, height = 300, units = c("mm"),
-    dpi = 600, limitsize = TRUE)
+    scale = 1, width = 400, height = 240, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+```
+
+
+```{r All Emo~Lit} 
+allEmoWordRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN"))
+allLitWordRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN"))
+allEmoEventRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN_event"))
+allLitEventRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN_event"))
+#word.model <- lm(allEmoWordRating ~ allLitWordRating)
+#event.model <- lm(allEmoEventRating ~ allLitEventRating)
+#anova(word.model)
+#anova(event.model)
+cor.test(allEmoWordRating, allLitWordRating, method = "pearson")
+cor.test(allEmoEventRating, allLitEventRating, method = "pearson")
+```
+
+```{r t test for behavioral results}
+rater <- read.delim("~/desktop/rater_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+fmri <- read.delim("~/desktop/fMRI_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+ttestResults <- data.frame()
+for (i in 3:58) { 
+  if ((i==11) | (i==13) | (i==22) | (i==24) | (i==40) | (i==56)) {
+    next()
+  }  
+  else {
+    result.temp <- t.test(rater[,i], fmri[,i], vvar.equal = TRUE)
+    ttestResults[i-2, 1:3] <- c(result.temp$statistic[["t"]], result.temp$parameter[["df"]], result.temp$p.value)
+  }
+  }
 
 
 
 ```
 
 
-```{r interactivePlotsAttempt, eval=FALSE}
+
+```{r interactivePlotsAttempt, include = FALSE, eval=FALSE}
 library(ggplot2)
 library(plotly)
 plot(emoDHOFinal$Onset, emoDHOFinal$MN)
 p <- ggplot(litDHOFinal, aes(x = Onset, y = MN)) +
   geom_point() #+ 
-  #geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE)
+  geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE)
 ggplotly(p)
 
 dotWithErrorPlotSave <- function(finalData) { 
-  #dodge <- position_dodge(width = 0.9)
+  dodge <- position_dodge(width = 0.9)
   limits <- aes(ymax = finalData$MN + finalData$SE, 
                 ymin = finalData$MN - finalData$SE)
  p <- ggplot(data = finalData, aes(x = Onset, y = MN, color = "blue")) + 
