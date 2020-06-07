@@ -2,7 +2,7 @@
 title: "CreateEventBoundaries"
 author: "Yuchao Wang"
 date: "11/7/2019"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}

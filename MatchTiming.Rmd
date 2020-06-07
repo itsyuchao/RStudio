@@ -1,15 +1,22 @@
 ---
-title: "MatchTiming"
+title: "Add Praat Timing to Qualtrics Ratings"
 author: "Yuchao Wang"
-date: "8/20/2019"
-output: html_document
+date: "6/6/2020"
+output: pdf_document
+fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r matchPraatFiles, echo=FALSE}
+## Match word ratings with onset 
+
+* Match Qualtrics ratings per word (for 1st person perspective stories) with the onset time of that word in both 1st and 3rd person perspective story recordings. 
+* Praat timing files adjusted to eliminate mismatches due to formatting or transcription differences. 
+* Add a column `onset`. 
+
+```{r match Praat Timing, echo=FALSE}
 #READ IN ALL 4 ADJUSTED PRAAT WORD ONSETS AND DURATIONS----
 colLabel <- c("Word", "Onset", "Duration")
 DHO <- read.delim("thesis/De Hond_O_adjusted.csv", header = FALSE, sep = ",", stringsAsFactors = FALSE)
@@ -75,8 +82,14 @@ emo2VwTiming <- addTimingCols(1237, DH2V, emoResultClean, emo2VwTiming, colNumEm
 emo2VwTiming <- addTimingCols(1117, DM2V, emoResultClean, emo2VwTiming, colNumEmo)
 lit2VwTiming <- addTimingCols(1237, DH2V, litResultClean, lit2VwTiming, colNumLit)
 lit2VwTiming <- addTimingCols(1117, DM2V, litResultClean, lit2VwTiming, colNumLit)
+```
 
+## Add mean and SE 
 
+* Add rating mean and SE as additional columns to matrix, and clean mismatched rows 
+* Save resulted matrix per story (`DM` and `DH`) per perspective (`O` and `2V`) per rating (`emo` and `lit`) as `.csv` files.  
+
+```{r add mean and SE columns}
 stderr <- function(x) {
   sd(x, na.rm = TRUE)/sqrt(length(x[!is.na(x)]))
 }
@@ -111,6 +124,7 @@ litDMOFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
 litDH2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
 litDM2VFinal <- matrix(data = NA, nrow = 0, ncol = colNumLit+4)
 
+#This function cleans mismatched entries and write CSV output files. 
 cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
   if (totalWord == 1237) {
     for (index in 1:totalWord) {
@@ -132,11 +146,10 @@ cleanOutput <- function(totalWord, colNum, rawData, outputFile, outputName) {
       }
     }
   }
-  #str(outputFile)
   write.csv(outputFile, file = paste("thesis/", outputName, ".csv", sep=""))
   return(outputFile)
 }
-#This function cleans mismatched entries and write CSV output files. 
+
 
 emoDHOFinal <- cleanOutput(1237, colNumEmo, emoOGwTiming, emoDHOFinal, "emoDHOFinal")
 emoDMOFinal <- cleanOutput(1117, colNumEmo, emoOGwTiming, emoDMOFinal, "emoDMOFinal")
@@ -148,6 +161,10 @@ litDH2VFinal <- cleanOutput(1237, colNumLit, lit2VwTiming, litDH2VFinal, "litDH2
 litDM2VFinal <- cleanOutput(1117, colNumLit, lit2VwTiming, litDM2VFinal, "litDM2VFinal")
 
 ```
+
+## Preliminary Visualization (not included) 
+
+* With mean word ratings against word onset time, with error bars. 
 
 ```{r Individual visualization of rating against time, include = FALSE} 
 #Visualize ratings against time----
@@ -184,14 +201,29 @@ dotWithErrorPlotSave(litDMOFinal, "Literariness Rating for De Muur", "litDMtime"
 
 ```
 
+## Final Visualization
+
+* To be used in manuscript 
+* `AllOriginal_eventMarked.csv` created by manually concatenating `emoDHOFinal_eventMarked`, `emoDMOFinal_eventMarked`, `litDHOFinal_eventMarked`, `litDMOFinal_eventMarked`. 
+* Overall plots of ratings against onset, per story, per type of rating (`emo` and `lit`). 
+* For 1. per word ratings 2. per semantic event ratings.
+* SE for literariness is remapped to 0 because its a binary decision and SE does not make sense.
+
 ```{r Overall visualization facetgrid}
 allRatingMarked <- read.csv(file = "thesis/AllOriginal_eventMarked.csv", header = T, sep = ",", stringsAsFactors = FALSE)
+
+#correct for interpretation of literariness SE by changing all lit SE to 0 
+for (i in 1:nrow(allRatingMarked)) {
+  if (allRatingMarked$Rating[i] == "Literariness") {
+    allRatingMarked$SE[i] = 0 
+  }
+}
 
 limits <- aes(ymax = allRatingMarked$MN + allRatingMarked$SE, 
                 ymin = allRatingMarked$MN - allRatingMarked$SE)
 word_plot <- ggplot(data = allRatingMarked, aes(x = Onset, y = MN, color = Rating)) + 
-    geom_point(size=2.5, color = "orange") +
-    geom_errorbar(limits, width = 0.5) +
+    geom_point(size=1.5) +
+    geom_errorbar(limits, width = 0.1, alpha = 0.2) +
     xlab("Word Onset Time (in sec)") +
     ylab("Mean Rating") +
     theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
@@ -202,6 +234,8 @@ event_plot <- ggplot(data = allRatingMarked, aes(x = Onset_event, y = MN_event, 
     ylab("Mean Rating") +
     theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
     facet_grid(Rating ~ Story, scales = "free_y")
+word_plot
+event_plot
 ggsave("~/Desktop/allWordRating.png", plot = word_plot, device = png(),
     scale = 1, width = 400, height = 240, units = c("mm"),
     dpi = 300, limitsize = TRUE)
@@ -210,23 +244,20 @@ ggsave("~/Desktop/allEventRating.png", plot = event_plot, device = png(),
     dpi = 300, limitsize = TRUE)
 ```
 
+## Stats - Emo ~ Lit (stories concatenated)
 
 ```{r All Emo~Lit} 
 allEmoWordRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN"))
 allLitWordRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN"))
 allEmoEventRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN_event"))
 allLitEventRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN_event"))
-#word.model <- lm(allEmoWordRating ~ allLitWordRating)
-#event.model <- lm(allEmoEventRating ~ allLitEventRating)
-#anova(word.model)
-#anova(event.model)
 cor.test(allEmoWordRating, allLitWordRating, method = "pearson")
 cor.test(allEmoEventRating, allLitEventRating, method = "pearson")
 ```
 
-```{r t test for behavioral results}
-rater <- read.delim("~/desktop/rater_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
-fmri <- read.delim("~/desktop/fMRI_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+```{r t test for behavioral results, include=FALSE}
+rater <- read.delim("~/Documents/GitHub/RStudio/thesis/Behavioral/rater_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
+fmri <- read.delim("~/Documents/GitHub/RStudio/thesis/Behavioral/fMRI_group_behavioral.csv", header = TRUE, sep = ",", stringsAsFactors = TRUE)
 ttestResults <- data.frame()
 for (i in 3:58) { 
   if ((i==11) | (i==13) | (i==22) | (i==24) | (i==40) | (i==56)) {
@@ -238,8 +269,6 @@ for (i in 3:58) {
   }
   }
 
-
-
 ```
 
 
@@ -247,29 +276,17 @@ for (i in 3:58) {
 ```{r interactivePlotsAttempt, include = FALSE, eval=FALSE}
 library(ggplot2)
 library(plotly)
-plot(emoDHOFinal$Onset, emoDHOFinal$MN)
+
 p <- ggplot(litDHOFinal, aes(x = Onset, y = MN)) +
-  geom_point() #+ 
-  geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE)
+  geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE))
 ggplotly(p)
 
-dotWithErrorPlotSave <- function(finalData) { 
-  dodge <- position_dodge(width = 0.9)
-  limits <- aes(ymax = finalData$MN + finalData$SE, 
-                ymin = finalData$MN - finalData$SE)
- p <- ggplot(data = finalData, aes(x = Onset, y = MN, color = "blue")) + 
-    geom_point(size=2.5, alpha=0.6, color = "orange") +
-    geom_errorbar(limits, width = 0.25) +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), 
-          axis.title.x=element_blank()) + 
-    ggtitle(paste("emoDH", ", N=", ncol(finalData)-6, sep=""))
- # ggsave(paste("~/Desktop/", shortTitle,".png", sep = ""), plot = last_plot(), device = png(),
-#    scale = 1, width = 300, height = 200, units = c("mm"),
- #   dpi = 300, limitsize = TRUE)
-  return(p)
-}
+ggplot(data = litDMOFinal, aes(x = Onset, y = MN, label = word)) + 
+    geom_text(size = 3, check_overlap = TRUE) + 
+    xlab("Word Onset Time (in sec)") +
+    ylab("Mean Rating") +
+    theme(text = element_text(size=12), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
 
-dotWithErrorPlotSave(emoDHOFinal)
 
 ```
 

@@ -1,0 +1,21 @@
+---
+title: "Marsbartest"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("Marsbartest_wkspace.RData")
+DMEmoSnPMPossum <- lm(DM_marsbar$Emobothsnpmpos ~ DM_marsbar$pc_emo)
+DMEmoSnPMNegsum <- lm(DM_marsbar$Emobothsnpmneg ~ DM_marsbar$pc_emo)
+DMLitSnPMPossum <- lm(DM_marsbar$Litbothsnpmpos ~ DM_marsbar$pc_lit)
+DMLitSnPMNegsum <- lm(DM_marsbar$Litbothsnpmneg ~ DM_marsbar$pc_lit)
+summary(DMEmoSnPMPossum)
+summary(DMEmoSnPMNegsum)
+summary(DMLitSnPMPossum)
+summary(DMLitSnPMNegsum)
+
+```

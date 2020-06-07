@@ -1,0 +1,6 @@
+lmInt_DHemo <- lm(IntensityandEmotionReg$intensity~IntensityandEmotionReg$DH_emo)
+summary(lmInt_DHemo)
+lmInt_DMemo <- lm(IntensityandEmotionReg$intensity~IntensityandEmotionReg$DM_emo)
+summary(lmInt_DMemo)
+lmDM_DHemo <- lm(IntensityandEmotionReg$DM_emo~IntensityandEmotionReg$DH_emo)
+summary(lmDM_DHemo)

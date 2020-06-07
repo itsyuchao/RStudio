@@ -1,8 +1,9 @@
 ---
-title: "Ratings matching original words"
+title: "Qualtrics Rating Preproc & Prelim Viz & Stats"
 author: "Yuchao Wang"
-date: "8/19/2019"
-output: html_document
+date: "6/6/2020"
+fontsize: 12pt
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,9 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyr)
 ```
 
-```{r Clean up raw ratings, echo = FALSE}
-#Clean up delimited csv files containing all rated words in survey----
-template <- read.csv(file = "forWordSeparation_cleaned.csv", header = F, sep = ",", stringsAsFactors = FALSE)
+## Preprocessing 
+
+* Using a `.csv` file, `forWordSeparation_cleaned`, to create a *word* by *participant* matrix with behavioral ratings (*emotional arousal* or *literariness*) from Qualtrics survey outputs. 
+
+* Specifically, `forWordSeparation_cleaned.csv` is read in to create `template`, which is used to search for the rating per word per participant.   
+
+```{r Clean up raw ratings}
+#Clean up csv files containing all rated words in survey----
+template <- read.csv(file = "forWordSeparation_cleaned.csv", 
+                     header = F, sep = ",", stringsAsFactors = FALSE)
 template <- t(template) 
 colnames(template) <- template[1, ] 
 template <- template[-1, ]
@@ -22,7 +30,9 @@ template <- template[!(template$word == ""), ]
 template <- template[ , c("word","qnLabel")]
 template$qnLabel <- trimws(template$qnLabel)
 template$qnLabel <- as.factor(template$qnLabel)
-template$qnLabel <- factor(template$qnLabel, levels = c("3.1","5.1","7.1","9.1","11.1","13.1","15.1","17.1","19.1","24.1","26.1","28.1","30.1","32.1","34.1","36.1","38.1")) 
+template$qnLabel <- factor(template$qnLabel, levels = c("3.1","5.1","7.1","9.1",
+                                                        "11.1","13.1","15.1","17.1","19.1","24.1","26.1",
+                                                        "28.1","30.1","32.1","34.1","36.1","38.1")) #question numbers assigned by Qualtrics to make sure the searches later do not encounter conflicts of the same word with the same numbering ('1:Meneer') appearing in different excerpts 
 qnLabel <- levels(template$qnLabel)
 
 
@@ -51,7 +61,8 @@ for (indexResponse in 1:totalParticipant) {
         }
         currentColName <- paste ("Q", searchQn, "_", possibleRating, sep = "", collapse = NULL)
         if (grepl(searchWord, emoResult[indexResponse,currentColName], fixed = TRUE)) {
-            emoResultClean[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
+            emoResultClean[indexWord,resultCol] <- substr(currentColName, 
+                                                          nchar(currentColName), nchar(currentColName))        
         }
         else {
           if ((possibleRating == 7) & (is.na(emoResultClean[indexWord,resultCol]))) {
@@ -87,7 +98,8 @@ for (indexResponse in 1:totalParticipant) {
         }
         currentColName <- paste ("Q", searchQn, "_", possibleRating, sep = "", collapse = NULL)
         if (grepl(searchWord, litResult[indexResponse,currentColName], fixed = TRUE)) {
-            litResultClean[indexWord,resultCol] <- substr(currentColName, nchar(currentColName), nchar(currentColName))        
+            litResultClean[indexWord,resultCol] <- substr(currentColName, 
+                                                          nchar(currentColName), nchar(currentColName))        
         }
         else {
           if ((possibleRating == 2) & (is.na(litResultClean[indexWord,resultCol]))) {
@@ -104,6 +116,11 @@ saveRDS(litResultClean, file = "litResultClean.rds")
 saveRDS(template, file = "template.rds")
 
 ```
+
+## Preliminary Visualization (not included)
+
+* see `MatchPraatTiming.rmd` for final viz
+* Visualize the Qualtrics ratings per word across participants for each of the two stories (`DM` and `DH`).  
 
 ```{r Individual visualization of rating against word #, include=FALSE} 
 #Visualize ratings against word number----
@@ -151,6 +168,9 @@ dotWithErrorPlotSave(litDHTrend, tlitResultClean, "Literariness Rating for De Me
 
 ```
 
+## Stats - Intraclass Correlation Coefficient
+
+* To check how well participants agree with each other on ratings. 
 
 ```{r Intraclass Correlation Coefficient}
 library(lme4)
@@ -175,7 +195,11 @@ ICC(litResultCleanICC, missing = FALSE, alpha = 0.05)
 
 ```
 
+## Stats - Emo ~ Lit by story
 
+* By story 
+* To check if *emotional arousal* and *literariness* are distinct and can serve as regressors in separate fMRI GLMs.
+* Specifically, checked both the correlation using 1. the original word-by-word mean values and 2. the rollmean with two preceding and two succeeding words
 
 ```{r Correlation of Emo~Lit}
 #Simple linear regression ANOVA of Emo on Lit ratings, with and without boxcar smoothing 
@@ -185,20 +209,14 @@ emoDHTrend <- cbind(emoDHTrend, rollmean(emoDHTrend$mean, k = 5, fill = NA, alig
 names(emoDHTrend)[14] <- "rollmean"
 litDHTrend <- cbind(litDHTrend, rollmean(litDHTrend$mean, k = 5, fill = NA, align = "center"))
 names(litDHTrend)[14] <- "rollmean"
-#emo_lit_DHmodel <- lm(emoDHTrend$mean ~ litDHTrend$mean)
-#emo_lit_DHboxedmodel <- lm(emoDHTrend$rollmean ~ litDHTrend$rollmean)
-#anova(emo_lit_DHmodel)
-#anova(emo_lit_DHboxedmodel)
 cor.test(emoDHTrend$mean, litDHTrend$mean, method = "pearson")
+cor.test(emoDHTrend$rollmean, litDHTrend$rollmean, method = "pearson")
 
 
 emoDMTrend <- cbind(emoDMTrend, rollmean(emoDMTrend$mean, k = 5, fill = NA, align = "center"))
 names(emoDMTrend)[14] <- "rollmean"
 litDMTrend <- cbind(litDMTrend, rollmean(litDMTrend$mean, k = 5, fill = NA, align = "center"))
 names(litDMTrend)[14] <- "rollmean"
-#emo_lit_DMmodel <- lm(emoDMTrend$mean ~ litDMTrend$mean)
-#emo_lit_DMboxedmodel <- lm(emoDMTrend$rollmean ~ litDMTrend$rollmean)
-#anova(emo_lit_DMmodel)
-#anova(emo_lit_DMboxedmodel)
 cor.test(emoDMTrend$mean, litDMTrend$mean, method = "pearson")
+cor.test(emoDMTrend$rollmean, litDMTrend$rollmean, method = "pearson")
 ```

@@ -1,0 +1,93 @@
+---
+title: "ROI_analysis"
+author: "Yuchao Wang"
+date: "May 26, 2020"
+fontsize: 12pt
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, warning=FALSE}
+library(readxl)
+ROI_analysis <- read_excel("~/Desktop/ROI_analysis.xlsx")
+library(lme4)
+library(ggplot2)
+library(GGally)
+
+#exploratory data analysis
+ggpairs(data = ROI_analysis[, c("roi_LitPos_IFG", "roi_LitPos_IPL", "roi_LitPos_Precu",
+                                "roi_LitNeg" , "roi_EmoNeg")])
+ggpairs(data = ROI_analysis[, c("interesting", "wellwritten", "of_high_literary_quality",
+                                "easy_to_understand", "accessible", "thrilling", "beautiful",
+                                "fascinating", "emotional", "sad")])
+ggpairs(data = ROI_analysis[, c("care_about_style", "like_fiction", "num_novels_lastyr", 
+                                "often_read", "IRI_fantasy", "need_for_cognition", 
+                                "need_for_affect", "author_recog", "EQ")])
+
+#ROI predicted by per story 10 item ratings
+lmIFG_10item <- lmer(roi_LitPos_IFG ~ interesting + wellwritten + of_high_literary_quality +
+                  easy_to_understand + accessible + thrilling + beautiful + fascinating +
+                  emotional + sad + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIFG_10item)
+lmFPCN_10item <- lmer(roi_EmoNeg ~ interesting + wellwritten + of_high_literary_quality +
+                  easy_to_understand + accessible + thrilling + beautiful + fascinating +
+                  emotional + sad, data = ROI_analysis)
+summary(lmFPCN_10item)
+lmIPL_10item <- lmer(roi_LitPos_IPL ~ interesting + wellwritten + of_high_literary_quality +
+                  easy_to_understand + accessible + thrilling + beautiful + fascinating +
+                  emotional + sad + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIPL_10item)
+lmPrecu_10item <- lmer(roi_LitPos_Precu ~ interesting + wellwritten + 
+                      of_high_literary_quality +
+                  easy_to_understand + accessible + thrilling + beautiful + fascinating +
+                  emotional + sad + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmPrecu_10item)
+lmSTG_10item <- lmer(roi_LitNeg ~ interesting + wellwritten + of_high_literary_quality +
+                  easy_to_understand + accessible + thrilling + beautiful + fascinating +
+                  emotional + sad + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmSTG_10item)
+
+#ROI predicted by principle components of 10 item rating
+lmIFG_3pc <- lmer(roi_LitPos_IFG ~ pc1_wellwritten + pc2_accessible + pc3_interesting + (1|Story) 
+                  + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIFG_3pc)
+lmFPCN_3pc <- lmer(roi_EmoNeg ~ pc1_wellwritten + pc2_accessible + pc3_interesting + (1|Story) 
+                  + (1|fMRI_subj), data = ROI_analysis)
+summary(lmFPCN_3pc)
+lmIPL_3pc <- lmer(roi_LitPos_IPL ~ pc1_wellwritten + pc2_accessible + pc3_interesting + (1|Story) 
+                  + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIPL_3pc)
+lmPrecu_3pc <- lmer(roi_LitPos_Precu ~ pc1_wellwritten + pc2_accessible + pc3_interesting + (1|Story) 
+                  + (1|fMRI_subj), data = ROI_analysis)
+summary(lmPrecu_3pc)
+lmSTG_3pc <- lmer(roi_LitNeg ~ pc1_wellwritten + pc2_accessible + pc3_interesting + (1|Story) 
+                  + (1|fMRI_subj), data = ROI_analysis)
+summary(lmSTG_3pc)
+
+#ROI predicted by individual questionnaire results
+lmIPL_qnns <- lmer(roi_LitPos_IPL ~ care_about_style + like_fiction + num_novels_lastyr + 
+                               often_read + IRI_fantasy + need_for_cognition + need_for_affect +
+                               author_recog + EQ + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIPL_qnns)
+lmIFG_qnns <- lmer(roi_LitPos_IFG ~ care_about_style + like_fiction + num_novels_lastyr + 
+                               often_read + IRI_fantasy + need_for_cognition + need_for_affect +
+                               author_recog + EQ + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmIFG_qnns)
+lmPrecu_qnns <- lmer(roi_LitPos_Precu ~ care_about_style + like_fiction + num_novels_lastyr + 
+                               often_read + IRI_fantasy + need_for_cognition + need_for_affect +
+                               author_recog + EQ + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmPrecu_qnns)
+lmSTG_qnns <- lmer(roi_LitNeg ~ care_about_style + like_fiction + num_novels_lastyr + 
+                               often_read + IRI_fantasy + need_for_cognition + need_for_affect +
+                               author_recog + EQ + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmSTG_qnns)
+lmFPCN_qnns <- lmer(roi_EmoNeg ~ care_about_style + like_fiction + num_novels_lastyr + 
+                               often_read + IRI_fantasy + need_for_cognition + need_for_affect +
+                               author_recog + EQ + (1|Story) + (1|fMRI_subj), data = ROI_analysis)
+summary(lmFPCN_qnns)
+```
+
