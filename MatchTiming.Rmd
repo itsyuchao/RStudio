@@ -277,16 +277,14 @@ for (i in 3:58) {
 library(ggplot2)
 library(plotly)
 
-p <- ggplot(litDHOFinal, aes(x = Onset, y = MN)) +
-  geom_errorbar(emoDHOFinal, mapping=aes(x = Onset, ymin = MN-SE, ymax=MN+SE))
-ggplotly(p)
+
 
 ggplot(data = litDMOFinal, aes(x = Onset, y = MN, label = word)) + 
-    geom_text(size = 3, check_overlap = TRUE) + 
+    geom_text(size = 3, check_overlap = TRUE, aes(color = MN)) + 
     xlab("Word Onset Time (in sec)") +
     ylab("Mean Rating") +
     theme(text = element_text(size=12), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
-
+#ggplotly(p)
 
 ```
 
