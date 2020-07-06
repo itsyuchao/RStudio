@@ -458,46 +458,64 @@ library(readxl)
 QualtricsGroup <- read_excel("~/Desktop/QualtricsGroup.xlsx")
 
 for (i in 1:nrow(QualtricsGroup)) {
-  for (j in 4:12) {
-    if ((QualtricsGroup[i,j] >= 0) & (QualtricsGroup[i,j] < 25)) {
+  for (j in 4:27) {
+    if ((QualtricsGroup[i,j] >= 0) & (QualtricsGroup[i,j] <= 25)) {
       QualtricsGroup[i,j] <- as.integer(1) 
     }
-    else if ((QualtricsGroup[i,j] > 25) & (QualtricsGroup[i,j] < 50)) {
+    else if ((QualtricsGroup[i,j] > 25) & (QualtricsGroup[i,j] <= 50)) {
       QualtricsGroup[i,j] <- as.integer(2) 
     }
-    else if ((QualtricsGroup[i,j] > 50) & (QualtricsGroup[i,j] < 75)) {
+    else if ((QualtricsGroup[i,j] > 50) & (QualtricsGroup[i,j] <= 75)) {
       QualtricsGroup[i,j] <- as.integer(3) 
     }
     else if ((QualtricsGroup[i,j] > 75) & (QualtricsGroup[i,j] <= 100)) {
       QualtricsGroup[i,j] <- as.integer(4) 
     }
-    else if (QualtricsGroup[i,j] == 25) {
-      if (sample(c(TRUE, FALSE),1)) {
-        QualtricsGroup[i,j] <- as.integer(1)
-      }
-      else {
-        QualtricsGroup[i,j] <- as.integer(2)
-      }
-    }
-    else if (QualtricsGroup[i,j] == 50) {
-      if (sample(c(TRUE, FALSE),1)) {
-        QualtricsGroup[i,j] <- as.integer(2)
-      }
-      else {
-        QualtricsGroup[i,j] <- as.integer(3)
-      }
-    }
-    else if (QualtricsGroup[i,j] == 75) {
-      if (sample(c(TRUE, FALSE),1)) {
-        QualtricsGroup[i,j] <- as.integer(3)
-      }
-      else {
-        QualtricsGroup[i,j] <- as.integer(4)
-      }
-    }
+    # else if (QualtricsGroup[i,j] == 25) {
+    #   if (sample(c(TRUE, FALSE),1)) {
+    #     QualtricsGroup[i,j] <- as.integer(1)
+    #   }
+    #   else {
+    #     QualtricsGroup[i,j] <- as.integer(2)
+    #   }
+    # }
+    # else if (QualtricsGroup[i,j] == 50) {
+    #   if (sample(c(TRUE, FALSE),1)) {
+    #     QualtricsGroup[i,j] <- as.integer(2)
+    #   }
+    #   else {
+    #     QualtricsGroup[i,j] <- as.integer(3)
+    #   }
+    # }
+    # else if (QualtricsGroup[i,j] == 75) {
+    #   if (sample(c(TRUE, FALSE),1)) {
+    #     QualtricsGroup[i,j] <- as.integer(3)
+    #   }
+    #   else {
+    #     QualtricsGroup[i,j] <- as.integer(4)
+    #   }
+    # }
   }
 }
 
+write.csv(QualtricsGroup, file = "~/Desktop/QualtricsGroup_converted2.csv")
+
+QnnMeasures <- read.csv(file = "~/Desktop/QualtricsGroup_converted.csv")
+
+library(ggplot2)
+library(ggpubr)
+ggline(QnnMeasures, x = "group", y = "easy.to.understand", color = "Story",
+       add = c("mean_se", "jitter"),
+       palette = c("#00AFBB", "#E7B800"))
+
+ggline(QnnMeasures, x = "group", y = "beautiful", color = "Story",
+       add = c("mean_se", "jitter"),
+       palette = c("#00AFBB", "#E7B800"))
+
+mean(QnnMeasures$beautiful[QnnMeasures$Story=="DM" & QnnMeasures$group=="fmri"], na.rm = TRUE)
+
+aovinterest <- aov(interesting ~ group + Story, data = QnnMeasures)
+summary(aovinterest)
 
 
 ```
