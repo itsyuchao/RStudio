@@ -36,56 +36,96 @@ ggpairs(data = ROI_analysis[, c("care_about_style", "like_fiction", "num_novels_
                                 "need_for_affect", "author_recog", "EQ")])
 ggpairs(data = ROI_analysis[, c("psc_FPAN_BinEmoNeg", "psc_FCN_BinEmoNeg", "psc_precu_BinEmoNeg", "psc_lSFG_BinEmoPos")])
 
-pdf("ROI_corr_binarized.pdf", height = 15, width = 20)
+
+#Output 18 figures to PDF file
+pdf("ROI_rho_binarized.pdf", height = 15, width = 20)
 
 
-print(ggpairs(data = ROI_analysis[, c("psc_FPAN_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr", 
+print(ggpairs(data = ROI_analysis[, c("psc_FPAN_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_FCN_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_precu_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lSFG_BinEmoPos", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lIFG_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lSPL_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lSMG_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_biMTG_BinLitNeg", "care_about_style", "like_fiction", "num_novels_lastyr",
+                                "often_read", "IRI_fantasy", "need_for_cognition",
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lAG_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr", 
                                 "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_FCN_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_precu_BinEmoNeg", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_lSFG_BinEmoPos", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_lIFG_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_lSPL_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_lSMG_BinLitPos", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
-print(ggpairs(data = ROI_analysis[, c("psc_biMTG_BinLitNeg", "care_about_style", "like_fiction", "num_novels_lastyr", 
-                                "often_read", "IRI_fantasy", "need_for_cognition", 
-                                "need_for_affect", "author_recog", "EQ")]))
+                                "need_for_affect", "author_recog", "EQ")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+
+
 
 
 print(ggpairs(data = ROI_analysis[, c("psc_FPAN_BinEmoNeg", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_FCN_BinEmoNeg", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_precu_BinEmoNeg", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_lSFG_BinEmoPos", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_lIFG_BinLitPos", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_lSPL_BinLitPos", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_lSMG_BinLitPos", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 print(ggpairs(data = ROI_analysis[, c("psc_biMTG_BinLitNeg", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
-                                "Imagery_items", "Emotional_Engagement_items")]))
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
+print(ggpairs(data = ROI_analysis[, c("psc_lAG_BinLitPos", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")],
+              upper = list(continuous = wrap('cor',method="spearman"))))
 
 dev.off()
 ```
 
 ```{r, eval=FALSE}
+
+#"beta_EmoNeg_Cbellum", "beta_EmoNeg_rParahipp", "beta_EmoNeg_rMFG", "beta_EmoNeg_ParietalL", "beta_EmoNeg", "psc_EmoNeg"
+#"beta_LitPos_IFG", "beta_LitPos_IPL", "beta_LitPos_Precu", "beta_LitNeg_lSTL", "beta_LitNeg_rSTL"
+ggpairs(data = ROI_analysis[, c("beta_EmoNeg_ParietalL", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")])
+ggpairs(data = ROI_analysis[, c("beta_EmoNeg_rMFG", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")])
+ggpairs(data = ROI_analysis[, c("beta_EmoNeg", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")])
+ggpairs(data = ROI_analysis[, c("beta_LitPos_IFG", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")])
+ggpairs(data = ROI_analysis[, c("beta_LitPos_IPL", "pc1_wellwritten", "pc2_accessible", "pc3_interesting",
+                                "Imagery_items", "Emotional_Engagement_items")])
 # #ROI predicted by per story 10 item ratings
 # lmIFG_10item <- lmer(beta_LitPos_IFG ~ interesting + wellwritten + of_high_literary_quality +
 #                   easy_to_understand + accessible + thrilling + beautiful + fascinating +

@@ -517,5 +517,45 @@ mean(QnnMeasures$beautiful[QnnMeasures$Story=="DM" & QnnMeasures$group=="fmri"],
 aovinterest <- aov(interesting ~ group + Story, data = QnnMeasures)
 summary(aovinterest)
 
+for (i in c("EmoEng_1", "EmoEng_2")) {
+  a <- t.test(QnnMeasures$i[QnnMeasures$group=="fmri"],QnnMeasures$i[QnnMeasures$group=="qualtrics"])
+  print(a)
+}
 
+multi.tests <- function(fun = t.test, df, vars, group.var, ...) {
+    sapply(simplify = FALSE,                                    # sapply(simplify=T) better, elements named
+           vars,                                                # loop on vector of outcome variable names
+           function(var) {
+               formula <- as.formula(paste(var, "~", group.var))# create a formula with outcome and grouping var.
+               fun(data = df, formula, ...)                     # perform test with a given fun, default t.test
+           }
+           )
+}
+library(broom)
+
+
+res.multi.t.tests <-
+    multi.tests(fun = t.test,
+                df = QnnMeasures,
+                vars = c("EmoEng_1","EmoEng_2"),
+                group.var = "group",
+                var.equal = TRUE, 
+                na.rm = TRUE)
+res.multi.t.tests
+
+library(readxl)
+DM_behav <- read_excel("~/Desktop/DM_behav.xlsx")
+DH_behav <- read_excel("~/Desktop/DH_behav.xlsx")
+
+DH_behav_res <- rbind(DH_behav_res, do(DH_behav, tidy(t.test(.$novels_read_last_year ~ .$group,
+                 alternative = "two.sided",
+                 mu = 0,
+                 paired = FALSE,
+                 var.equal = FALSE,
+                 conf.level = 0.95
+                 ))))
+
+write.csv(DM_behav_res, file = "~/Desktop/DM_behav_res_Emothenimgthen10item.csv")
+write.csv(DH_behav_res, file = "~/Desktop/DH_behav_res_Emothenimgthen10itemthenficandnovel.csv")
+t.test(DM_behav$EmoEng_1[DM_behav$group == "fmri"], DM_behav$EmoEng_1[DM_behav$group == "qualtrics"])
 ```

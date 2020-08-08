@@ -222,26 +222,44 @@ for (i in 1:nrow(allRatingMarked)) {
 limits <- aes(ymax = allRatingMarked$MN + allRatingMarked$SE, 
                 ymin = allRatingMarked$MN - allRatingMarked$SE)
 word_plot <- ggplot(data = allRatingMarked, aes(x = Onset, y = MN, color = Rating)) + 
-    geom_point(size=1.5) +
+    geom_point(size=1.5, alpha = 0.7) +
     geom_errorbar(limits, width = 0.1, alpha = 0.2) +
+    scale_color_manual(values=c("#DC3220", "#005AB5")) +
     xlab("Word Onset Time (in sec)") +
     ylab("Mean Rating") +
     theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
     facet_grid(Rating ~ Story, scales = "free_y")
 event_plot <- ggplot(data = allRatingMarked, aes(x = Onset_event, y = MN_event, color = Rating)) + 
-    geom_step(direction = "hv", size=0.5) +
+    geom_step(direction = "hv", size=0.5, alpha = 0.8) +
+    scale_color_manual(values=c("#DC3220", "#005AB5")) +
     xlab("Event Onset Time (in sec)") +
     ylab("Mean Rating") +
     theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
     facet_grid(Rating ~ Story, scales = "free_y")
+binevent_plot <- ggplot(data = allRatingMarked, aes(x = Onset_event, y = Bin_event, color = Rating)) + 
+    geom_step(direction = "hv", size=0.5, alpha = 0.8) +
+    scale_color_manual(values=c("#DC3220", "#005AB5")) +
+    xlab("Event Onset Time (in sec)") +
+    ylab("Binarized Rating") +
+    scale_y_continuous(breaks=c(0,1)) +
+    theme(text = element_text(size=15),  axis.ticks.x=element_blank(), legend.position="bottom") + 
+    facet_grid(Rating ~ Story, scales = "free_y")
 word_plot
 event_plot
+binevent_plot
 ggsave("~/Desktop/allWordRating.png", plot = word_plot, device = png(),
     scale = 1, width = 400, height = 240, units = c("mm"),
     dpi = 300, limitsize = TRUE)
 ggsave("~/Desktop/allEventRating.png", plot = event_plot, device = png(),
     scale = 1, width = 400, height = 240, units = c("mm"),
     dpi = 300, limitsize = TRUE)
+ggsave("~/Desktop/allBinEventRating.png", plot = binevent_plot, device = png(),
+    scale = 1, width = 400, height = 120, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+
+
+
+
 ```
 
 ## Stats - Emo ~ Lit (stories concatenated)
@@ -269,6 +287,7 @@ for (i in 3:58) {
   }
   }
 
+
 ```
 
 
@@ -279,12 +298,12 @@ library(plotly)
 
 
 
-ggplot(data = litDMOFinal, aes(x = Onset, y = MN, label = word)) + 
-    geom_text(size = 3, check_overlap = TRUE, aes(color = MN)) + 
+p <- ggplot(data = litDHOFinal, aes(x = Onset, y = MN, label = word)) + 
+    geom_text(size = 2, check_overlap = TRUE, aes(color = MN)) + 
     xlab("Word Onset Time (in sec)") +
     ylab("Mean Rating") +
-    theme(text = element_text(size=12), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
-#ggplotly(p)
+    theme(text = element_text(size=5), axis.ticks.x=element_blank()) 
+ggplotly(p)
 
 ```
 
