@@ -1,0 +1,74 @@
+---
+title: "Untitled"
+author: "Yuchao Wang"
+date: "12/8/2020"
+output: pdf_document
+---
+
+# Ethan White's Curriculum Vitae
+
+## Contact
+
+Email: [ethanwhite@ufl.edu](mailto:ethanwhite@ufl.edu)  
+Twitter: [@](https://twitter.com/ethanwhite)[ethanwhite](https://twitter.com/ethanwhite)  
+Website: [ethanwhite.org](http://ethanwhite.org)  
+Mail: Department of Wildlife Ecology & Conservation, University of Florida, 110
+      Newins-Ziegler Hall, PO Box 110430, Gainesville, FL 32603
+
+## Education
+
+2005 \hspace{4mm} PhD Biology (with distinction), University of New Mexico  
+1998 \hspace{4mm} BA Biology (*magna cum laude*), Colorado College
+
+## Research and Professional Experience
+
+2015- \hspace{10mm} Associate Professor, Dept. Wildlife Ecology & Conservation,
+University of Florida  
+2012- \hspace{10mm} Senior Scientist, Sevilleta Long-Term Ecological Research
+Station  
+2012-2015 \hspace{2mm} Associate Professor, Dept. of Biology and Ecology
+Center, Utah State University  
+2007-2012  \hspace{2mm} Assistant Professor, Dept. of Biology and Ecology Center, Utah State
+University  
+2005-2007 \hspace{2mm} NSF Postdoctoral Fellow in Biological Informatics, Univ. of AZ & U.C. Merced
+
+## Fellowships and Awards
+
+Moore Foundation Investigator in Data-Driven Discovery 2014-2021  
+NSF CAREER 'Young Investigators' Award 2010-2015  
+NSF Postdoctoral Fellowship in Biological Informatics 2005-2007  
+NSF Graduate Research Fellowship 2000-2005  
+University of New Mexico Biocomplexity Fellowship 2002-2004  
+Richard G. Beidleman Award 1998 (Colorado College)  
+Phi Beta Kappa 1998
+
+## Publications
+
+Publication Impact:
+[Google Scholar](http://scholar.google.com/citations?user=pHmra8cAAAAJ&hl=en)
+(citations =  4494, h-index = 31)  
+[**OA**]: The published paper is open access (or at least free to read)  
+[**OA version**]: Link to an open or free version of the paper if the published version is not open access  
+**undergraduate, *graduate student, <sup>+</sup>postdoc
+
+
+### Journal Articles
+
+Weinstein, B.G., S. Marconi, M. Aubry-Kientz, G. Vincent, H. Senyondo, E.P. White. 2020.
+DeepForest: A Python package for RGB deep learning tree crown delineation.
+Methods in Ecology and Evolution 11:1743–1751. <https://doi.org/10.1111/2041-210X.13472>
+[**OA**, [Code](https://github.com/weecology/DeepForest), [Preprint](https://doi.org/10.1101/2020.07.07.191551)]
+
+Taylor, S.S., J.R. Coyle, E.P. White, and A.H. Hurlbert. In press.
+A simulation study of the use of temporal occupancy for identifying core and transient species.
+PLOS ONE. [**OA**, [Preprint](https://doi.org/10.1101/2020.08.06.240135)]
+
+Marconi, S. S.J. Graves, B.G. Weinstein, S. Bohlman, and E.P. White. In press.
+Rethinking the fundamental unit of ecological remote sensing:
+Estimating individual level plant traits at scale. Ecological Applications.
+[**OA**, [Preprint](https://doi.org/10.1101/556472)]
+
+Adler, P.B., E.P. White, M.H. Cortez. 2020. Matching the forecast horizon
+with the relevant ecological processes. Ecography 43:1729–1739.
+[https://doi.org/10.1111/ecog.05271](https://doi.org/10.1111/ecog.05271)
+[[Code](https://doi.org/10.5281/zenodo.3936096), [Preprint](https://doi.org/10.1101/807057)]

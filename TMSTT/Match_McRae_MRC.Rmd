@@ -1,0 +1,63 @@
+---
+title: "TMSTT_McRae"
+author: "Yuchao Wang"
+date: "2/12/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Matching McRae with MRC
+Matching McRae 2005 ratings with additional ratings from MRC 
+
+
+```{r}
+CONCS_brm <- read.delim("~/Documents/GitHub/RStudio/TMSTT/McRae-BRM-InPress/CONCS_brm.txt")
+
+McRae_MRC <- read.delim("~/Documents/GitHub/RStudio/TMSTT/McRae-BRM-InPress/McRae_MRC.txt")
+McRae_MRC <- data.frame(lapply(McRae_MRC, function(x) {gsub("-", "NA", x)}))
+McRae_MRC[, 2:7] <- sapply(McRae_MRC[, 2:7], as.numeric)
+
+
+totalMRC <- nrow(McRae_MRC)
+totalBRM <- nrow(CONCS_brm)
+CombinedList <- cbind(CONCS_brm[FALSE, ], McRae_MRC[FALSE, 2:7]) #create empty dataframe with all relevant variables
+
+for (BRMindex in 1:totalBRM) {
+  for (MRCindex in 1:BRMindex) {
+    searchString <- paste("^",CONCS_brm$Concept[BRMindex],"$", sep = "") #this makes sure that the strings match exactly, to avoid problems of grep matching e.g. book to bookcase
+    if (grepl(searchString, McRae_MRC$Word[MRCindex], ignore.case = TRUE)) {
+      CombinedList <- rbind(CombinedList, (cbind(CONCS_brm[BRMindex, ], McRae_MRC[MRCindex, 2:7])))
+    }
+  }
+}
+
+CombinedList_short <- subset(CombinedList, select = c("Concept","ln.KF.", "Familiarity", "Length_Phonemes", "Length_Syllables", "Num_Feats_Tax", "Num_Feats_No_Tax", "Num_Disting_Feats_No_Tax","Density_No_Tax", "CNC", "IMG"))
+CombinedList_short <- CombinedList_short[complete.cases(CombinedList_short), ]
+write.csv(CombinedList_short, file = "~/Documents/GitHub/RStudio/TMSTT/McRae-BRM-InPress/CombinedList_short.csv", row.names = FALSE)
+```
+
+##Check difference in MRC and McRae ratings of familiarity 
+
+Highly correlated (r=0.7), using McRae 2005 since it was more recent than MRC and was done in the US. 
+
+```{r}
+cor.test(CombinedList$Familiarity, CombinedList$FAM, method = "pearson")
+plot(CombinedList$Familiarity, CombinedList$FAM)
+```
+
+##Check agreement in 3 lists of stimuli 
+
+- Need 3 lists of 10 words each
+- Within each list, 4 household items, 3 animals, 3 food 
+- Need to match at least on familiarity, concreteness, and imageability 
+
+```{r}
+PotentialList <- read.csv("~/Documents/GitHub/RStudio/TMSTT/McRae-BRM-InPress/Potential_Stim.csv")
+
+summary(manova(cbind(Familiarity, CNC, IMG) ~ ListNum, data = PotentialList)) #one-way manova on familiaritym concreteness, and imageability
+summary(manova(cbind(ln.KF., Familiarity, Length_Phonemes, Length_Syllables, Num_Feats_Tax, Num_Feats_No_Tax, Num_Disting_Feats_No_Tax, Density_No_Tax, CNC, IMG) ~ ListNum, data = PotentialList)) #one-way manova on potentially relevant normed features from McRae 2005
+```
+
