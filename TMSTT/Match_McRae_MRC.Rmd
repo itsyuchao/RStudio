@@ -43,9 +43,33 @@ write.csv(CombinedList_short, file = "~/Documents/GitHub/RStudio/TMSTT/McRae-BRM
 
 Highly correlated (r=0.7), using McRae 2005 since it was more recent than MRC and was done in the US. 
 
+##Check if possible to increase total number of features
+
+Higher familiarity correlates with higher number of features produced 
+
+##Check group differences in number of taxonomic features 
+
+Animals tend to have more taxonomic features than household items and food 
+
 ```{r}
 cor.test(CombinedList$Familiarity, CombinedList$FAM, method = "pearson")
 plot(CombinedList$Familiarity, CombinedList$FAM)
+
+library(ggplot2)
+cor.test(CombinedList$Num_Feats_Tax, CombinedList$Familiarity, method = "pearson")
+Fam_NumFeats <- ggplot(data = CombinedList, aes(x = Num_Feats_Tax, y = Familiarity, label = Concept)) + 
+  geom_text(size = 1.5, alpha = 0.7, angle = 20, position = position_jitter(width = 1, height = 0.5)) +
+  xlab("Total Number of Features") +
+  ylab("Familiarity") +
+  theme(text = element_text(size=15))
+ggsave("Fam_NumFeats.png", plot = Fam_NumFeats, device = png(),
+    scale = 1, width = 300, height = 180, units = c("mm"),
+    dpi = 600, limitsize = TRUE)
+
+library(readxl)
+CombinedList_short_grouped <- read_excel("~/Documents/GitHub/RStudio/TMSTT/McRae-BRM-InPress/CombinedList_short_grouped.xlsx")
+ggplot(data = CombinedList_short_grouped, aes(x = Group, y = Num_Tax)) +
+  geom_boxplot()
 ```
 
 ##Check agreement in 3 lists of stimuli 
