@@ -1,0 +1,260 @@
+1 Accordion 4.55
+2 Airplane 2.65
+3 Alligator 1.24
+4 Anchor 2.8
+5 Ant 1.41
+6 Apple 2.43
+7 Arm 2.13
+8 Arrow 1.26
+9 Artichoke 2.23
+10 Ashtray 3.87
+11 Asparagus 1.63
+12 Axe 4.38
+13 Baby carriage 3.2
+14 Ball 4.2
+15 Balloon 2.42
+16 Banana 3.8
+17 Barn 1.71
+18 Barrel 1.95
+19 Baseball bat 3.89
+20 Basket 3.1
+21 Bear 1.57
+22 Bed 3.92
+23 Bee 1.83
+24 Beetle 1.32
+25 Bell 3.64
+26 Belt 4.53
+27 Bicycle 4.63
+28 Bird 1.23
+29 Blouse 3.03
+30 Book 4.13
+31 Boot 3.55
+32 Bottle 4.05
+33 Bow 2.58
+34 Bowl 3.47
+35 Box 2.27
+36 Bread 2.23
+37 Broom 4.7
+38 Brush 3.95
+39 Bus 3
+40 Butterfly 1.45 
+41 Button 3.16 
+42 Cake 2.49 
+43 Camel 1.68 
+44 Candle 3.05 
+45 Cannon 2.34 
+46 Cap 3.81 
+47 Car 4.05 
+48 Carrot 2.48 
+49 Cat 2.45 
+50 Caterpillar 1.44 
+51 Celery 1.42 
+52 Chain 2.95 
+53 Chair 3.82 
+54 Cherry 2.05 
+55 Chicken 2.05 
+56 Chisel 2.61 
+57 Church 2.36 
+58 Cigar 4.03 
+59 Cigarette 4.54 
+60 Clock 2.16 
+61 Clothespin 3.7 
+62 Cloud 1.74 
+63 Clown 1.68 
+64 Coat 3.33 
+65 Comb 4.38 
+66 Corn 2.17 
+67 Couch 2.93 
+68 Cow 3.2 
+69 Crown 3.33 
+70 Cup 4.15 
+71 Deer 1.23 
+72 Desk 2.38 
+73 Dog 2.88 
+74 Doll 2.56 
+75 Donkey 2.18 
+76 Door 3.97 
+77 Doorknob 3.44 
+78 Dress 2.98 
+79 Dresser 2.63 
+80 Drum 4.58 
+81 Duck 1.6 
+82 Eagle 1.35 
+83 Ear 3.05 
+84 Elephant 1.45
+85 Envelope 4.05
+86 Eye 2.94
+87 Fence 1.59
+88 Finger 2.45
+89 Fish 1.77
+90 Flag 2.9
+91 Flower 3.08
+92 Flute 4.4
+93 Fly 2.13
+94 Foot 2.72
+95 Football 3.72
+96 Football helmet 3.16
+97 Fork 4.15
+98 Fox 1.41
+99 French horn 2.63
+100 Frog 1.6
+101 Frying pan 3.45
+102 Garbage can 2.44
+103 Giraffe 1.15
+104 Glass 4.5
+105 Glasses 4.53
+106 Glove 4.1
+107 Goat 1.7
+108 Gorilla 1.4
+109 Grapes 2.53
+110 Grasshopper 1.33
+111 Guitar 4.68
+112 Gun 4.45
+113 Hair 2.87
+114 Hammer 4.78
+115 Hand 2.51
+116 Hanger 3.23
+117 Harp 4.15
+118 Hat 4.28
+119 Heart 2.13
+120 Helicopter 2.15
+121 Horse 3.93
+122 House 1.58
+123 Iron 4.68
+124 Ironing board 3.35
+125 Jacket 3.33
+126 Kangaroo 1.85
+127 Kettle 2.21
+128 Key 4.33
+129 Kite 2.47
+130 Knife 4.33
+Ladder 4.13 
+Lamp 2.16 
+Leaf 1.5 
+Leg 2.23 
+Lemon 2.92 
+Leopard 1.26 
+Lettuce 1.71 
+Light bulb 2.49 
+Light switch 3.41 
+Lion 1.58 
+Lips 3.08 
+Lobster 1.53 
+Lock 2.62 
+Mitten 3.43 
+Monkey 1.55 
+Moon 1.05 
+Motorcycle 4.28 
+Mountain 1.87 
+Mouse 1.38 
+Mushroom 1.45 
+Nail 3.83 
+Nail file 4.1 
+Necklace 3.82 
+Needle 3.83 
+Nose 3.23 
+Nut 2.49 
+Onion 2.3 
+Orange 2.95 
+Ostrich 1.23 
+Owl 1.26 
+Paintbrush 3.75 
+Pants 4.28 
+Peach 2 
+Peacock 1.39 
+Peanut 2.03 
+Pear 2.2 
+Pen 4.31 
+Pencil 3.7 
+Penguin 1.6 
+Pepper 1.65 
+Piano 4.59 
+Pig 1.83 
+Pineapple 1.73 
+Pipe 4.5 
+Pitcher 3.36 
+Pliers 3.03
+177 Plug 2.8
+178 Pocketbook 3.44
+179 Pot 3.13
+180 Potato 1.88
+181 Pumpkin 1.61
+182 Rabbit 1.65
+183 Raccoon 1.23
+184 Record player 3.21
+185 Refrigerator 2.36
+186 Rhinoceros 1.18
+187 Ring 3.51
+188 Rocking chair 3.87
+189 Roller skate 3.55
+190 Rolling pin 4.05
+191 Rooster 1.38
+192 Ruler 3.53
+193 Sailboat 2.15
+194 Saltshaker 3.93
+195 Sandwich 2.56
+196 Saw 4.75
+197 Scissors 4.88
+198 Screw 3.5
+199 Screwdriver 4.35
+200 Sea horse 1.1
+201 Seal 1.48
+202 Sheep 2
+203 Shirt 3.44
+204 Shoe 3.9
+205 Skirt 3.44
+206 Skunk 1.47
+207 Sled 2.92
+208 Snail 1.59
+209 Snake 1.5
+210 Snowman 1.58
+211 Sock 3.93
+212 Spider 1.58
+213 Spinning wheel 2.05
+214 Spool of thread 2.89
+215 Spoon 4.05
+216 Squirrel 1.28
+217 Star 1.08
+218 Stool 3.23
+219 Stove 2.45
+220 Strawberry 1.76
+221 Suitcase 3.1
+222 Sun 1.93
+223 Swan 1.1
+Sweater 3.5 
+Swing 3.59 
+Table 1.88 
+Telephone 4.8 
+Television 3 
+Tennis racket 4.53 
+Thimble 2.92 
+Thumb 2.97 
+Tie 4.18 
+Tiger 1.21 
+Toaster 2.37 
+Toe 1.86 
+Tomato 1.83 
+Toothbrush 4.93 
+Top 3.34 
+Traffic light 1.29 
+Train 2.13 
+Tree 1.64 
+Truck 3.23 
+Trumpet 4.03 
+Turtle 1.53 
+Umbrella 4.23 
+Vase 3 
+Vest 2.68 
+Violin 4.73 
+Wagon 2.03 
+Watch 4.58 
+Watering can 4.08 
+Watermelon 2.26 
+Well 2.13 
+Wheel 2.08 
+Whistle 4.58 
+Windmill 1.26 
+Window 3.8 
+Wineglass 4.03 
+Wrench 3.32 
+Zebra 1.23
