@@ -123,39 +123,36 @@ library(ltm)
 QnnMeasures <- read.csv(file = "~/Desktop/AesLit Manuscript/QualtricsGroup_converted.csv")
 
 
-#cronbach's alpha for AesAppreciation DH in rating group 
-AesAppreciation_DH_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DH", select = 5:12)
-cronbach.alpha(AesAppreciation_DH_rating)
+#cronbach's alpha for SWAS_imagery DH in rating group 
+SWASimg_DH_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DH", select = 15:20)
+cronbach.alpha(SWASimg_DH_rating)
 
-#cronbach's alpha for AesAppreciation DM in rating group 
-AesAppreciation_DM_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DM", select = 5:12)
-cronbach.alpha(AesAppreciation_DM_rating)
+#cronbach's alpha for SWAS_imagery DM in rating group 
+SWASimg_DM_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DM", select = 15:20)
+cronbach.alpha(SWASimg_DM_rating)
 
-#cronbach's alpha for AesAppreciation DH in fmri group 
-#excluded items "emotion" and "sad" as the rating group did not rate these two items
-AesAppreciation_DH_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DH", select = 5:12)
-cronbach.alpha(AesAppreciation_DH_fmri[complete.cases(AesAppreciation_DH_fmri),])#one fmri participant missed AesAppreciation ratings for story DH
+#cronbach's alpha for SWAS_emoeng DH in rating group 
+SWASemoeng_DH_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DH", select = 21:29)
+cronbach.alpha(SWASemoeng_DH_rating)
 
-#cronbach's alpha for AesAppreciation DM in fmri group 
-#excluded items "emotion" and "sad" as the rating group did not rate these two items
-AesAppreciation_DM_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DM", select = 5:12)
-cronbach.alpha(AesAppreciation_DM_fmri)
+#cronbach's alpha for SWAS_emoeng DM in rating group 
+SWASemoeng_DM_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DM", select = 21:29)
+cronbach.alpha(SWASemoeng_DM_rating)
 
-#cronbach's alpha for SWAS DH in rating group 
-SWAS_DH_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DH", select = 15:29)
-cronbach.alpha(SWAS_DH_rating)
+#cronbach's alpha for SWAS_imagery DH in fmri group 
+SWASimg_DH_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DH", select = 15:20)
+cronbach.alpha(SWASimg_DH_fmri)
 
-#cronbach's alpha for SWAS DM in rating group 
-SWAS_DM_rating <- subset(QnnMeasures, group == "qualtrics" & Story == "DM", select = 15:29)
-cronbach.alpha(SWAS_DM_rating)
+#cronbach's alpha for SWAS_imagery DM in fmri group 
+SWASimg_DM_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DM", select = 15:20)
+cronbach.alpha(SWASimg_DM_fmri)
 
-#cronbach's alpha for SWAS DH in fmri group 
-SWAS_DH_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DH", select = 15:29)
-cronbach.alpha(SWAS_DH_fmri)
+#cronbach's alpha for SWAS_emoeng DH in fmri group 
+SWASemoeng_DH_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DH", select = 21:29)
+cronbach.alpha(SWASemoeng_DH_fmri)
 
-#cronbach's alpha for SWAS DM in fmri group 
-SWAS_DM_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DM", select = 15:29)
-cronbach.alpha(SWAS_DM_fmri)
-
+#cronbach's alpha for SWAS_emoeng DM in fmri group 
+SWASemoeng_DM_fmri <- subset(QnnMeasures, group == "fmri" & Story == "DM", select = 21:29)
+cronbach.alpha(SWASemoeng_DM_fmri)
 
 ```

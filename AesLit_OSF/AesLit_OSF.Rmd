@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Preprocessing of Qualtrics
 
-* Using a `.csv` file, `forWordSeparation_cleaned`, to create a *word* by *participant* matrix with behavioral ratings (*emotional arousal* or *literariness*) from Qualtrics survey outputs. 
+* Using a `.csv` file, `forWordSeparation_cleaned`, to create a *word* by *participant* matrix with behavioral ratings (*emotional intensity* or *literariness*) from Qualtrics survey outputs. 
 
 * Specifically, `forWordSeparation_cleaned.csv` is read in to create `template`, which is used to search for the rating per word per participant.   
 
@@ -143,7 +143,7 @@ ICC(litResultCleanICC, missing = FALSE, alpha = 0.05)
 ## Stats - Emo ~ Lit by story
 
 * By story 
-* To check if *emotional arousal* and *literariness* are distinct and can serve as regressors in separate fMRI GLMs.
+* To check if *emotional intensity* and *literariness* are distinct and can serve as regressors in separate fMRI GLMs.
 * Specifically, checked both the correlation using 1. the original word-by-word mean values and 2. the rollmean with two preceding and two succeeding words
 
 ```{r Correlation of Emo~Lit, warning=FALSE}
@@ -397,7 +397,7 @@ write.csv(litDM2Vmarked, file = "ProcessedByEvent/litDM2VFinal_eventMarked.csv",
 ## Final Visualization
 
 * To be used in manuscript 
-* `OriginalCombined_eventMarked.csv` created by manually concatenating `emoDHOFinal_eventMarked`, `emoDMOFinal_eventMarked`, `litDHOFinal_eventMarked`, `litDMOFinal_eventMarked`. Then used Excel to binarize emotional and literary events according to midpoint (strictly over 4 for emotional arousal, strictly over 1.5 for literariness).
+* `OriginalCombined_eventMarked.csv` created by manually concatenating `emoDHOFinal_eventMarked`, `emoDMOFinal_eventMarked`, `litDHOFinal_eventMarked`, `litDMOFinal_eventMarked`. Then used Excel to binarize emotional and literary events according to midpoint (strictly over 4 for emotional intensity, strictly over 1.5 for literariness).
 * Overall plots of ratings against onset, per story, per type of rating (`emo` and `lit`). 
 * For 1. per word ratings 2. per semantic event ratings.
 * SE for literariness is remapped to 0 because its a binary decision and SE does not make sense.
@@ -456,12 +456,16 @@ ggsave("RatingPlots/allBinEventRating.png", plot = binevent_plot, device = png()
 * Using original, 1st perspec stories. 
 
 ```{r All Emo~Lit} 
-allEmoWordRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN"))
+allEmoWordRating <- unlist(subset(allRatingMarked, Rating == "Emotional Intensity", select = "MN"))
 allLitWordRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN"))
-allEmoEventRating <- unlist(subset(allRatingMarked, Rating == "Emotional Arousal", select = "MN_event"))
+allEmoEventRating <- unlist(subset(allRatingMarked, Rating == "Emotional Intensity", select = "MN_event"))
 allLitEventRating <- unlist(subset(allRatingMarked, Rating == "Literariness", select = "MN_event"))
 cor.test(allEmoWordRating, allLitWordRating, method = "pearson")
 cor.test(allEmoEventRating, allLitEventRating, method = "pearson")
+
+#set.seed(20) 
+#randomLitRating <- runif(2344, 1, 2)
+#cor.test(allEmoWordRating, randomLitRating, method = "pearson")
 ```
 
 
