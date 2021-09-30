@@ -1,0 +1,83 @@
+---
+title: "TMSinDystonia"
+author: "Yuchao Wang"
+date: "9/29/2021"
+output: pdf_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(readxl)
+library(ggplot2)
+library(tidyr)
+
+
+PROJ_HOME <- "~/Box/Dystonia_Resting_Results/"
+
+Dystonia_Data_Info <- read_excel(paste(PROJ_HOME, "Dystonia_Data_Info.xlsx", sep = ""), range = cell_cols(1:2)) #read in only ID and study group
+N_SUBJ <- nrow(Dystonia_Data_Info)
+
+collate_cols <- function(subjid, hemi, varoi, currdf) {
+#this is a function to collate specific measurements from subject txt files into a m*n file where m is the number of total subjects and n is the number of entries to a specific type of variable e.g. cortical thickness 
+#subjid: orig subject ID; 
+#hemi: hemisphere(lh or rh); 
+#varoi: VARible Of Interest as in column name in subject txt file; 
+#currdf: current data frame result file 
+  temp <- read_delim(paste(PROJ_HOME, subjid,"/Parcellation-Anatomical/",
+                           hemi,"_anat_parc_metrics_a2009s.txt", sep=""), "\t", 
+                     escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE) 
+  temprow <- as.data.frame(t(as.matrix(temp[varoi])))
+  currdf <- rbind(currdf, temprow)
+  if (index == N_SUBJ) {
+    row.names(currdf) <- 1:N_SUBJ
+    names(currdf) <- t(as.matrix(temp[1]))
+    names(currdf) <- paste(hemi, names(currdf), sep = "_")
+    currdf <- data.frame(Dystonia_Data_Info, currdf)
+    } #give appropriate subject ID as row names and ROI as column names
+  return(currdf)
+} 
+
+
+```
+
+## Cortical thickness
+
+```{r cortical thickness input}
+#lh 
+lh_cortthickness <- data.frame()
+for (index in 1:N_SUBJ) {
+  lh_cortthickness <- collate_cols(Dystonia_Data_Info[index,1], "lh", "mean_cortical_thickness", lh_cortthickness)
+}
+lh_cortthickness_long <- lh_cortthickness %>% gather("parc", "mean_cort_thickness", 3:77)
+
+#rh
+rh_cortthickness <- data.frame()
+for (index in 1:N_SUBJ) {
+  rh_cortthickness <- collate_cols(Dystonia_Data_Info[index,1], "rh", "mean_cortical_thickness", rh_cortthickness)
+} 
+
+ggplot(data = lh_cortthickness_long, aes(x = group, y = mean_cort_thickness)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ parc)
+
+
+```
+
+## Resting state Functional connectivity
+
+```{r FC input}
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
