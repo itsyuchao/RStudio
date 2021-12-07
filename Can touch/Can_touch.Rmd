@@ -1,0 +1,24 @@
+---
+title: "Can touch"
+author: "Yuchao Wang"
+date: "11/29/2021"
+output: pdf_document
+---
+
+
+
+## Data Import and Cleaning
+
+```{r Import and clean}
+library(readxl)
+rawdata <- read_excel("Downloads/Can touch Rev 1/Can touch 6.16.16.xlsx", 
+    sheet = "raw data")
+```
+
+## 
+
+```{r }
+
+```
+
+

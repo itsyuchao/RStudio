@@ -18,14 +18,16 @@ PROJ_HOME <- "~/Box/Dystonia_Resting_Results/"
 Dystonia_Data_Info <- read_excel(paste(PROJ_HOME, "Dystonia_Data_Info.xlsx", sep = ""), range = cell_cols(1:2)) #read in only ID and study group
 N_SUBJ <- nrow(Dystonia_Data_Info)
 
-collate_cols <- function(subjid, hemi, varoi, currdf) {
+collate_cols <- function(subjid, subfolder, fname, varoi, currdf, hemi = "") {
 #this is a function to collate specific measurements from subject txt files into a m*n file where m is the number of total subjects and n is the number of entries to a specific type of variable e.g. cortical thickness 
 #subjid: orig subject ID; 
-#hemi: hemisphere(lh or rh); 
+#subfolder: this needs "/" before and after for path to be correct;
+#fname: filename, note "_" if hemi is specified
+#hemi: hemisphere(lh or rh), default value is EMPTY;
 #varoi: VARible Of Interest as in column name in subject txt file; 
 #currdf: current data frame result file 
-  temp <- read_delim(paste(PROJ_HOME, subjid,"/Parcellation-Anatomical/",
-                           hemi,"_anat_parc_metrics_a2009s.txt", sep=""), "\t", 
+  temp <- read_delim(paste(PROJ_HOME, subjid, subfolder,
+                           hemi, fname, sep=""), "\t", 
                      escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE) 
   temprow <- as.data.frame(t(as.matrix(temp[varoi])))
   currdf <- rbind(currdf, temprow)
@@ -43,24 +45,74 @@ collate_cols <- function(subjid, hemi, varoi, currdf) {
 
 ## Cortical thickness
 
-```{r cortical thickness input}
+```{r cortical thickness aparc input}
 #lh 
-lh_cortthickness <- data.frame()
+lh_cortthickness_aparc <- data.frame()
 for (index in 1:N_SUBJ) {
-  lh_cortthickness <- collate_cols(Dystonia_Data_Info[index,1], "lh", "mean_cortical_thickness", lh_cortthickness)
+  lh_cortthickness_aparc <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "_anat_parc_metrics_aparc.txt", "mean_cortical_thickness", lh_cortthickness_aparc, "lh")
 }
-lh_cortthickness_long <- lh_cortthickness %>% gather("parc", "mean_cort_thickness", 3:77)
+lh_cortthickness_aparc_long <- lh_cortthickness_aparc %>% gather("parc", "mean_cort_thickness", 3:ncol(lh_cortthickness_aparc))
 
 #rh
-rh_cortthickness <- data.frame()
+rh_cortthickness_aparc <- data.frame()
 for (index in 1:N_SUBJ) {
-  rh_cortthickness <- collate_cols(Dystonia_Data_Info[index,1], "rh", "mean_cortical_thickness", rh_cortthickness)
+  rh_cortthickness_aparc <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "_anat_parc_metrics_aparc.txt", "mean_cortical_thickness", rh_cortthickness_aparc, "rh")
 } 
+rh_cortthickness_aparc_long <- rh_cortthickness_aparc %>% gather("parc", "mean_cort_thickness", 3:ncol(rh_cortthickness_aparc))
 
-ggplot(data = lh_cortthickness_long, aes(x = group, y = mean_cort_thickness)) + 
+
+lh_cortthickness_aparc_plot <- ggplot(data = lh_cortthickness_aparc_long, aes(x = group, y = mean_cort_thickness)) + 
     geom_boxplot(alpha = 0.5) +
     geom_point(aes(color = group)) +
-    facet_wrap(~ parc)
+    facet_wrap(~ parc,  scales = "free_y")
+ggsave("lh_cortthickness_aparc.png", plot = lh_cortthickness_aparc_plot, device = png(),
+    scale = 1, width = 500, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+rh_cortthickness_aparc_plot <- ggplot(data = rh_cortthickness_aparc_long, aes(x = group, y = mean_cort_thickness)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ parc,  scales = "free_y")
+ggsave("rh_cortthickness_aparc.png", plot = rh_cortthickness_aparc_plot, device = png(),
+    scale = 1, width = 500, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+
+
+```
+
+```{r cortical thickness a2009s input}
+#lh 
+lh_cortthickness_a2009s <- data.frame()
+for (index in 1:N_SUBJ) {
+  lh_cortthickness_a2009s <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "_anat_parc_metrics_a2009s.txt", "mean_cortical_thickness", lh_cortthickness_a2009s, "lh")
+}
+lh_cortthickness_a2009s_long <- lh_cortthickness_a2009s %>% gather("parc", "mean_cort_thickness", 3:ncol(lh_cortthickness_a2009s))
+
+#rh
+rh_cortthickness_a2009s <- data.frame()
+for (index in 1:N_SUBJ) {
+  rh_cortthickness_a2009s <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "_anat_parc_metrics_a2009s.txt", "mean_cortical_thickness", rh_cortthickness_a2009s, "rh")
+} 
+rh_cortthickness_a2009s_long <- rh_cortthickness_a2009s %>% gather("parc", "mean_cort_thickness", 3:ncol(rh_cortthickness_a2009s))
+
+
+lh_cortthickness_a2009s_plot <- ggplot(data = lh_cortthickness_a2009s_long, aes(x = group, y = mean_cort_thickness)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ parc,  scales = "free_y")
+ggsave("lh_cortthickness_a2009s.png", plot = lh_cortthickness_a2009s_plot, device = png(),
+    scale = 1, width = 500, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+rh_cortthickness_a2009s_plot <- ggplot(data = rh_cortthickness_a2009s_long, aes(x = group, y = mean_cort_thickness)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ parc,  scales = "free_y")
+ggsave("rh_cortthickness_a2009s.png", plot = rh_cortthickness_a2009s_plot, device = png(),
+    scale = 1, width = 500, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
 
 
 ```
@@ -72,12 +124,41 @@ ggplot(data = lh_cortthickness_long, aes(x = group, y = mean_cort_thickness)) +
 
 ```
 
-## Including Plots
+## Segmentation volume comparison
 
-You can also embed plots, for example:
+```{r Segmentation absolute volume}
+aseg_vol <- data.frame()
+for (index in 1:N_SUBJ) {
+  aseg_vol <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "anat_parc_metrics_aseg.txt", "volume", aseg_vol)
+}
+aseg_vol_long <- aseg_vol %>% gather("seg", "volume", 3:ncol(aseg_vol))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+aseg_vol_plot <- ggplot(data = aseg_vol_long, aes(x = group, y = volume)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ seg,  scales = "free_y")
+ggsave("aseg_vol.png", plot = aseg_vol_plot, device = png(),
+    scale = 1, width = 400, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r Segmentation percentage volume}
+aseg_volpct <- data.frame()
+for (index in 1:N_SUBJ) {
+  aseg_volpct <- collate_cols(Dystonia_Data_Info[index,1], "/Parcellation-Anatomical/", 
+                                   "anat_parc_metrics_aseg.txt", "volume_percent", aseg_volpct)
+}
+aseg_volpct_long <- aseg_volpct %>% gather("seg", "volume_percent", 3:ncol(aseg_volpct))
+aseg_volpct_long$volume_percent = as.numeric(gsub("\\%", "", aseg_volpct_long$volume_percent))
+
+aseg_volpct_plot <- ggplot(data = aseg_volpct_long, aes(x = group, y = volume_percent)) + 
+    geom_boxplot(alpha = 0.5) +
+    geom_point(aes(color = group)) +
+    facet_wrap(~ seg,  scales = "free_y")
+ggsave("aseg_volpct.png", plot = aseg_volpct_plot, device = png(),
+    scale = 1, width = 400, height = 400, units = c("mm"),
+    dpi = 300, limitsize = TRUE)
+```
+
+
